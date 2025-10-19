@@ -14,6 +14,67 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_events: {
+        Row: {
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          company_id: string
+          created_at: string
+          department_id: string | null
+          duration_seconds: number | null
+          external_id: string | null
+          external_system: Database["public"]["Enums"]["external_system"] | null
+          id: string
+          metadata: Json | null
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          company_id: string
+          created_at?: string
+          department_id?: string | null
+          duration_seconds?: number | null
+          external_id?: string | null
+          external_system?:
+            | Database["public"]["Enums"]["external_system"]
+            | null
+          id?: string
+          metadata?: Json | null
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: Database["public"]["Enums"]["activity_type"]
+          company_id?: string
+          created_at?: string
+          department_id?: string | null
+          duration_seconds?: number | null
+          external_id?: string | null
+          external_system?:
+            | Database["public"]["Enums"]["external_system"]
+            | null
+          id?: string
+          metadata?: Json | null
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_events_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alert_events: {
         Row: {
           acknowledged: boolean | null
@@ -279,6 +340,498 @@ export type Database = {
         }
         Relationships: []
       }
+      department_permissions: {
+        Row: {
+          company_id: string
+          created_at: string
+          department_id: string
+          has_access: boolean
+          id: string
+          metadata: Json | null
+          system_name: string
+          system_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          department_id: string
+          has_access?: boolean
+          id?: string
+          metadata?: Json | null
+          system_name: string
+          system_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          department_id?: string
+          has_access?: boolean
+          id?: string
+          metadata?: Json | null
+          system_name?: string
+          system_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_permissions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "department_permissions_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      departments: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          parent_id: string | null
+          type: Database["public"]["Enums"]["department_type"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          parent_id?: string | null
+          type: Database["public"]["Enums"]["department_type"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          parent_id?: string | null
+          type?: Database["public"]["Enums"]["department_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "departments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_threads: {
+        Row: {
+          assigned_to: string | null
+          company_id: string
+          created_at: string
+          created_by: string
+          department_id: string | null
+          description: string
+          id: string
+          parent_thread_id: string | null
+          priority: number | null
+          status: Database["public"]["Enums"]["feedback_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          company_id: string
+          created_at?: string
+          created_by: string
+          department_id?: string | null
+          description: string
+          id?: string
+          parent_thread_id?: string | null
+          priority?: number | null
+          status?: Database["public"]["Enums"]["feedback_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string
+          department_id?: string | null
+          description?: string
+          id?: string
+          parent_thread_id?: string | null
+          priority?: number | null
+          status?: Database["public"]["Enums"]["feedback_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_threads_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_threads_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_threads_parent_thread_id_fkey"
+            columns: ["parent_thread_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goal_achievements: {
+        Row: {
+          achievement_percentage: number | null
+          calculated_at: string
+          company_id: string
+          created_at: string
+          current_value: number
+          department_id: string | null
+          goal_id: string
+          id: string
+          is_achieved: boolean | null
+          period_end: string
+          period_start: string
+          target_value: number
+          user_id: string | null
+        }
+        Insert: {
+          achievement_percentage?: number | null
+          calculated_at?: string
+          company_id: string
+          created_at?: string
+          current_value?: number
+          department_id?: string | null
+          goal_id: string
+          id?: string
+          is_achieved?: boolean | null
+          period_end: string
+          period_start: string
+          target_value: number
+          user_id?: string | null
+        }
+        Update: {
+          achievement_percentage?: number | null
+          calculated_at?: string
+          company_id?: string
+          created_at?: string
+          current_value?: number
+          department_id?: string | null
+          goal_id?: string
+          id?: string
+          is_achieved?: boolean | null
+          period_end?: string
+          period_start?: string
+          target_value?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_achievements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_achievements_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_achievements_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean
+          metric_type: Database["public"]["Enums"]["goal_metric_type"]
+          name: string
+          period: Database["public"]["Enums"]["goal_period"]
+          start_date: string
+          target_value: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          metric_type: Database["public"]["Enums"]["goal_metric_type"]
+          name: string
+          period: Database["public"]["Enums"]["goal_period"]
+          start_date: string
+          target_value: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          metric_type?: Database["public"]["Enums"]["goal_metric_type"]
+          name?: string
+          period?: Database["public"]["Enums"]["goal_period"]
+          start_date?: string
+          target_value?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goals_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_content: {
+        Row: {
+          company_id: string
+          content_type: Database["public"]["Enums"]["content_type"]
+          created_at: string
+          duration_minutes: number | null
+          external_url: string | null
+          id: string
+          is_active: boolean
+          learning_path_id: string
+          metadata: Json | null
+          order_index: number
+          storage_path: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          content_type: Database["public"]["Enums"]["content_type"]
+          created_at?: string
+          duration_minutes?: number | null
+          external_url?: string | null
+          id?: string
+          is_active?: boolean
+          learning_path_id: string
+          metadata?: Json | null
+          order_index?: number
+          storage_path?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          content_type?: Database["public"]["Enums"]["content_type"]
+          created_at?: string
+          duration_minutes?: number | null
+          external_url?: string | null
+          id?: string
+          is_active?: boolean
+          learning_path_id?: string
+          metadata?: Json | null
+          order_index?: number
+          storage_path?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_content_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_content_learning_path_id_fkey"
+            columns: ["learning_path_id"]
+            isOneToOne: false
+            referencedRelation: "learning_paths"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_paths: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          department_id: string | null
+          description: string | null
+          estimated_duration_minutes: number | null
+          id: string
+          is_active: boolean
+          is_mandatory: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          estimated_duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          is_mandatory?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          department_id?: string | null
+          description?: string | null
+          estimated_duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          is_mandatory?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_paths_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_paths_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_progress: {
+        Row: {
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          is_completed: boolean
+          last_accessed_at: string
+          learning_content_id: string
+          learning_path_id: string
+          progress_percentage: number
+          time_spent_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          last_accessed_at?: string
+          learning_content_id: string
+          learning_path_id: string
+          progress_percentage?: number
+          time_spent_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          last_accessed_at?: string
+          learning_content_id?: string
+          learning_path_id?: string
+          progress_percentage?: number
+          time_spent_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_progress_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_progress_learning_content_id_fkey"
+            columns: ["learning_content_id"]
+            isOneToOne: false
+            referencedRelation: "learning_content"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_progress_learning_path_id_fkey"
+            columns: ["learning_path_id"]
+            isOneToOne: false
+            referencedRelation: "learning_paths"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       login_locations: {
         Row: {
           city: string | null
@@ -350,6 +903,7 @@ export type Database = {
           company_id: string
           created_at: string
           department: string | null
+          department_id: string | null
           full_name: string | null
           id: string
           position: string | null
@@ -360,6 +914,7 @@ export type Database = {
           company_id: string
           created_at?: string
           department?: string | null
+          department_id?: string | null
           full_name?: string | null
           id: string
           position?: string | null
@@ -370,6 +925,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           department?: string | null
+          department_id?: string | null
           full_name?: string | null
           id?: string
           position?: string | null
@@ -381,6 +937,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
             referencedColumns: ["id"]
           },
         ]
@@ -469,6 +1032,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_default_departments: {
+        Args: { p_company_id: string }
+        Returns: undefined
+      }
       get_user_company_id: {
         Args: { _user_id: string }
         Returns: string
@@ -483,6 +1050,13 @@ export type Database = {
       }
     }
     Enums: {
+      activity_type:
+        | "call"
+        | "email"
+        | "ticket"
+        | "system_access"
+        | "meeting"
+        | "task"
       alert_priority: "baixa" | "media" | "alta" | "critica"
       alert_type:
         | "login_suspeito"
@@ -490,6 +1064,38 @@ export type Database = {
         | "api_lento"
         | "uso_anormal"
         | "personalizado"
+      content_type: "video" | "pdf" | "quiz" | "external_link"
+      department_type:
+        | "administrativo"
+        | "comercial"
+        | "operacoes"
+        | "ti"
+        | "financeiro"
+        | "rh"
+        | "juridico"
+        | "vendas"
+        | "marketing"
+        | "producao"
+        | "logistica"
+        | "qualidade"
+        | "infraestrutura"
+        | "desenvolvimento"
+      external_system:
+        | "erp"
+        | "crm"
+        | "helpdesk"
+        | "phone_system"
+        | "email_system"
+        | "project_management"
+      feedback_status: "aberto" | "em_analise" | "implementado" | "rejeitado"
+      goal_metric_type:
+        | "tickets_resolved"
+        | "calls_made"
+        | "emails_sent"
+        | "meetings_attended"
+        | "tasks_completed"
+        | "custom"
+      goal_period: "daily" | "weekly" | "monthly" | "quarterly" | "yearly"
       integration_status: "ativo" | "inativo" | "erro" | "pendente"
       integration_type: "erp" | "crm" | "financeiro" | "rh" | "outro"
       user_role: "admin" | "gestor" | "usuario"
@@ -620,6 +1226,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_type: [
+        "call",
+        "email",
+        "ticket",
+        "system_access",
+        "meeting",
+        "task",
+      ],
       alert_priority: ["baixa", "media", "alta", "critica"],
       alert_type: [
         "login_suspeito",
@@ -628,6 +1242,41 @@ export const Constants = {
         "uso_anormal",
         "personalizado",
       ],
+      content_type: ["video", "pdf", "quiz", "external_link"],
+      department_type: [
+        "administrativo",
+        "comercial",
+        "operacoes",
+        "ti",
+        "financeiro",
+        "rh",
+        "juridico",
+        "vendas",
+        "marketing",
+        "producao",
+        "logistica",
+        "qualidade",
+        "infraestrutura",
+        "desenvolvimento",
+      ],
+      external_system: [
+        "erp",
+        "crm",
+        "helpdesk",
+        "phone_system",
+        "email_system",
+        "project_management",
+      ],
+      feedback_status: ["aberto", "em_analise", "implementado", "rejeitado"],
+      goal_metric_type: [
+        "tickets_resolved",
+        "calls_made",
+        "emails_sent",
+        "meetings_attended",
+        "tasks_completed",
+        "custom",
+      ],
+      goal_period: ["daily", "weekly", "monthly", "quarterly", "yearly"],
       integration_status: ["ativo", "inativo", "erro", "pendente"],
       integration_type: ["erp", "crm", "financeiro", "rh", "outro"],
       user_role: ["admin", "gestor", "usuario"],
