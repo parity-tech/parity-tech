@@ -1,1 +1,10 @@
 project_id = "zfcbgkbehtyqbqxzafjd"
+
+[functions.webhook-activity-events]
+verify_jwt = false
+
+[functions.calculate-goal-achievements]
+verify_jwt = false
+
+[functions.check-goal-alerts]
+verify_jwt = false

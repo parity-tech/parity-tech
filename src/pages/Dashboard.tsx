@@ -180,6 +180,18 @@ export default function Dashboard() {
 
         {/* Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card className="hover:shadow-lg transition-smooth cursor-pointer" onClick={() => navigate("/compliance")}>
+            <CardHeader>
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+                <MapPin className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle>Compliance</CardTitle>
+              <CardDescription>
+                Metas, trilhas de capacitação e feedback por setor
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
           <Card className="hover:shadow-lg transition-smooth cursor-pointer">
             <CardHeader>
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
