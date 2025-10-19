@@ -20,3 +20,12 @@ verify_jwt = false
 
 [functions.check-reimbursement-fraud]
 verify_jwt = false
+
+[functions.process-medical-leave-extension]
+verify_jwt = false
+
+[functions.check-medical-leave-alerts]
+verify_jwt = false
+
+[functions.check-wellness-engagement]
+verify_jwt = false

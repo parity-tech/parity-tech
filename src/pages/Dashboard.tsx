@@ -240,14 +240,14 @@ export default function Dashboard() {
             </CardHeader>
           </Card>
 
-          <Card className="hover:shadow-lg transition-smooth cursor-pointer">
+          <Card className="hover:shadow-lg transition-smooth cursor-pointer" onClick={() => navigate("/people")}>
             <CardHeader>
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
                 <Users className="w-6 h-6 text-primary" />
               </div>
-              <CardTitle>Equipe</CardTitle>
+              <CardTitle>Gestão de Pessoas</CardTitle>
               <CardDescription>
-                Gerencie usuários e permissões
+                Licença médica, bem-estar e benefícios para colaboradores
               </CardDescription>
             </CardHeader>
           </Card>

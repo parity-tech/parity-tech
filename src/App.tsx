@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Compliance from "./pages/Compliance";
 import Alerts from "./pages/Alerts";
+import PeopleManagement from "./pages/PeopleManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/alerts" element={<Alerts />} />
+          <Route path="/people" element={<PeopleManagement />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

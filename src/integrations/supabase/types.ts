@@ -310,6 +310,189 @@ export type Database = {
           },
         ]
       }
+      benefit_partners: {
+        Row: {
+          benefit_types: string[]
+          category: Database["public"]["Enums"]["benefit_category"]
+          company_id: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          benefit_types: string[]
+          category: Database["public"]["Enums"]["benefit_category"]
+          company_id: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          benefit_types?: string[]
+          category?: Database["public"]["Enums"]["benefit_category"]
+          company_id?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "benefit_partners_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      benefit_voucher_usage: {
+        Row: {
+          company_id: string
+          dependent_id: string | null
+          id: string
+          notes: string | null
+          used_at: string
+          user_id: string
+          voucher_id: string
+        }
+        Insert: {
+          company_id: string
+          dependent_id?: string | null
+          id?: string
+          notes?: string | null
+          used_at?: string
+          user_id: string
+          voucher_id: string
+        }
+        Update: {
+          company_id?: string
+          dependent_id?: string | null
+          id?: string
+          notes?: string | null
+          used_at?: string
+          user_id?: string
+          voucher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "benefit_voucher_usage_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "benefit_voucher_usage_dependent_id_fkey"
+            columns: ["dependent_id"]
+            isOneToOne: false
+            referencedRelation: "dependents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "benefit_voucher_usage_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "benefit_vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      benefit_vouchers: {
+        Row: {
+          applicable_to: Database["public"]["Enums"]["dependent_type"][] | null
+          benefit_type: string
+          category: Database["public"]["Enums"]["benefit_category"]
+          company_id: string
+          created_at: string
+          description: string | null
+          discount_percentage: number | null
+          discount_value_cents: number | null
+          id: string
+          is_active: boolean
+          max_uses_per_user: number | null
+          partner_id: string | null
+          redemption_instructions: string | null
+          title: string
+          updated_at: string
+          valid_until: string | null
+          voucher_code: string | null
+        }
+        Insert: {
+          applicable_to?: Database["public"]["Enums"]["dependent_type"][] | null
+          benefit_type: string
+          category: Database["public"]["Enums"]["benefit_category"]
+          company_id: string
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          discount_value_cents?: number | null
+          id?: string
+          is_active?: boolean
+          max_uses_per_user?: number | null
+          partner_id?: string | null
+          redemption_instructions?: string | null
+          title: string
+          updated_at?: string
+          valid_until?: string | null
+          voucher_code?: string | null
+        }
+        Update: {
+          applicable_to?: Database["public"]["Enums"]["dependent_type"][] | null
+          benefit_type?: string
+          category?: Database["public"]["Enums"]["benefit_category"]
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          discount_value_cents?: number | null
+          id?: string
+          is_active?: boolean
+          max_uses_per_user?: number | null
+          partner_id?: string | null
+          redemption_instructions?: string | null
+          title?: string
+          updated_at?: string
+          valid_until?: string | null
+          voucher_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "benefit_vouchers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "benefit_vouchers_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "benefit_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           created_at: string
@@ -438,6 +621,62 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dependents: {
+        Row: {
+          birth_date: string | null
+          company_id: string
+          cpf: string | null
+          created_at: string
+          dependent_type: Database["public"]["Enums"]["dependent_type"]
+          documents_path: string[] | null
+          has_documents: boolean | null
+          id: string
+          name: string
+          photo_url: string | null
+          species: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birth_date?: string | null
+          company_id: string
+          cpf?: string | null
+          created_at?: string
+          dependent_type: Database["public"]["Enums"]["dependent_type"]
+          documents_path?: string[] | null
+          has_documents?: boolean | null
+          id?: string
+          name: string
+          photo_url?: string | null
+          species?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birth_date?: string | null
+          company_id?: string
+          cpf?: string | null
+          created_at?: string
+          dependent_type?: Database["public"]["Enums"]["dependent_type"]
+          documents_path?: string[] | null
+          has_documents?: boolean | null
+          id?: string
+          name?: string
+          photo_url?: string | null
+          species?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dependents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -1054,6 +1293,63 @@ export type Database = {
           },
         ]
       }
+      medical_leave_extensions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          certificate_id: string
+          company_id: string
+          created_at: string
+          extension_days: number
+          id: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          certificate_id: string
+          company_id: string
+          created_at?: string
+          extension_days?: number
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          certificate_id?: string
+          company_id?: string
+          created_at?: string
+          extension_days?: number
+          id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_leave_extensions_certificate_id_fkey"
+            columns: ["certificate_id"]
+            isOneToOne: false
+            referencedRelation: "medical_certificates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_leave_extensions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       overtime_records: {
         Row: {
           approval_date: string | null
@@ -1480,6 +1776,379 @@ export type Database = {
           },
         ]
       }
+      wellness_challenge_participations: {
+        Row: {
+          challenge_id: string
+          company_id: string
+          completed_at: string | null
+          id: string
+          joined_at: string
+          points_earned: number | null
+          progress_percentage: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          company_id: string
+          completed_at?: string | null
+          id?: string
+          joined_at?: string
+          points_earned?: number | null
+          progress_percentage?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          company_id?: string
+          completed_at?: string | null
+          id?: string
+          joined_at?: string
+          points_earned?: number | null
+          progress_percentage?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wellness_challenge_participations_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "wellness_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wellness_challenge_participations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wellness_challenges: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string
+          external_id: string | null
+          external_source: string | null
+          id: string
+          is_active: boolean
+          max_participants: number | null
+          points_reward: number
+          start_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date: string
+          external_id?: string | null
+          external_source?: string | null
+          id?: string
+          is_active?: boolean
+          max_participants?: number | null
+          points_reward?: number
+          start_date: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string
+          external_id?: string | null
+          external_source?: string | null
+          id?: string
+          is_active?: boolean
+          max_participants?: number | null
+          points_reward?: number
+          start_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wellness_challenges_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wellness_points_balance: {
+        Row: {
+          available_points: number
+          company_id: string
+          last_activity_at: string | null
+          lifetime_points: number
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available_points?: number
+          company_id: string
+          last_activity_at?: string | null
+          lifetime_points?: number
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available_points?: number
+          company_id?: string
+          last_activity_at?: string | null
+          lifetime_points?: number
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wellness_points_balance_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wellness_points_transactions: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          points_amount: number
+          source_id: string | null
+          source_type: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          points_amount: number
+          source_id?: string | null
+          source_type?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          points_amount?: number
+          source_id?: string | null
+          source_type?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wellness_points_transactions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wellness_reward_redemptions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          delivered_at: string | null
+          delivery_details: Json | null
+          id: string
+          points_spent: number
+          reward_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          delivered_at?: string | null
+          delivery_details?: Json | null
+          id?: string
+          points_spent: number
+          reward_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          delivered_at?: string | null
+          delivery_details?: Json | null
+          id?: string
+          points_spent?: number
+          reward_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wellness_reward_redemptions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wellness_reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "wellness_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wellness_rewards: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          max_per_user: number | null
+          points_cost: number
+          reward_details: Json | null
+          reward_type: string
+          stock_quantity: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_per_user?: number | null
+          points_cost: number
+          reward_details?: Json | null
+          reward_type: string
+          stock_quantity?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_per_user?: number | null
+          points_cost?: number
+          reward_details?: Json | null
+          reward_type?: string
+          stock_quantity?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wellness_rewards_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wellness_settings: {
+        Row: {
+          company_id: string
+          created_at: string
+          expiration_months: number | null
+          id: string
+          min_points_for_redemption: number
+          point_value_cents: number
+          points_expire: boolean
+          points_per_challenge: number
+          points_per_health_activity: number
+          points_per_meditation: number
+          points_per_nutrition_log: number
+          points_per_workout: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          expiration_months?: number | null
+          id?: string
+          min_points_for_redemption?: number
+          point_value_cents?: number
+          points_expire?: boolean
+          points_per_challenge?: number
+          points_per_health_activity?: number
+          points_per_meditation?: number
+          points_per_nutrition_log?: number
+          points_per_workout?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          expiration_months?: number | null
+          id?: string
+          min_points_for_redemption?: number
+          point_value_cents?: number
+          points_expire?: boolean
+          points_per_challenge?: number
+          points_per_health_activity?: number
+          points_per_meditation?: number
+          points_per_nutrition_log?: number
+          points_per_workout?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wellness_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1517,6 +2186,7 @@ export type Database = {
         | "api_lento"
         | "uso_anormal"
         | "personalizado"
+      benefit_category: "saude" | "lazer" | "educacao"
       certificate_status: "pendente" | "aprovado" | "rejeitado"
       content_type: "video" | "pdf" | "quiz" | "external_link"
       department_type:
@@ -1534,6 +2204,7 @@ export type Database = {
         | "qualidade"
         | "infraestrutura"
         | "desenvolvimento"
+      dependent_type: "pet" | "filho"
       external_system:
         | "erp"
         | "crm"
@@ -1699,6 +2370,7 @@ export const Constants = {
         "uso_anormal",
         "personalizado",
       ],
+      benefit_category: ["saude", "lazer", "educacao"],
       certificate_status: ["pendente", "aprovado", "rejeitado"],
       content_type: ["video", "pdf", "quiz", "external_link"],
       department_type: [
@@ -1717,6 +2389,7 @@ export const Constants = {
         "infraestrutura",
         "desenvolvimento",
       ],
+      dependent_type: ["pet", "filho"],
       external_system: [
         "erp",
         "crm",
