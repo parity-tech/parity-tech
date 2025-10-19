@@ -11,6 +11,8 @@ import Alerts from "./pages/Alerts";
 import PeopleManagement from "./pages/PeopleManagement";
 import Commercial from "./pages/Commercial";
 import CustomerService from "./pages/CustomerService";
+import HRIntegrations from "./pages/HRIntegrations";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const App = () => (
           <Route path="/people" element={<PeopleManagement />} />
           <Route path="/commercial" element={<Commercial />} />
           <Route path="/customer-service" element={<CustomerService />} />
+          <Route path="/hr-integrations" element={<HRIntegrations />} />
+          <Route path="/analytics" element={<Analytics />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

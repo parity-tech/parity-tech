@@ -204,14 +204,50 @@ export default function Dashboard() {
             </CardHeader>
           </Card>
 
-          <Card className="hover:shadow-lg transition-smooth cursor-pointer">
+          <Card className="hover:shadow-lg transition-smooth cursor-pointer" onClick={() => navigate("/commercial")}>
             <CardHeader>
               <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-2">
                 <Link2 className="w-6 h-6 text-accent" />
               </div>
-              <CardTitle>Integrações API</CardTitle>
+              <CardTitle>Área Comercial</CardTitle>
               <CardDescription>
-                Gerencie conexões com ERPs, CRMs e sistemas internos
+                CRM, VOIP e analytics para vendas
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-smooth cursor-pointer" onClick={() => navigate("/customer-service")}>
+            <CardHeader>
+              <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-2">
+                <Link2 className="w-6 h-6 text-accent" />
+              </div>
+              <CardTitle>Atendimento ao Cliente</CardTitle>
+              <CardDescription>
+                ERP, VOIP e métricas de suporte
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-smooth cursor-pointer" onClick={() => navigate("/hr-integrations")}>
+            <CardHeader>
+              <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-2">
+                <Users className="w-6 h-6 text-accent" />
+              </div>
+              <CardTitle>Integrações de RH</CardTitle>
+              <CardDescription>
+                Admissões, férias e gestão de benefícios
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-smooth cursor-pointer" onClick={() => navigate("/analytics")}>
+            <CardHeader>
+              <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-2">
+                <TrendingUp className="w-6 h-6 text-accent" />
+              </div>
+              <CardTitle>Analytics & BI</CardTitle>
+              <CardDescription>
+                Power BI, Looker e dashboards avançados
               </CardDescription>
             </CardHeader>
           </Card>
@@ -228,17 +264,6 @@ export default function Dashboard() {
             </CardHeader>
           </Card>
 
-          <Card className="hover:shadow-lg transition-smooth cursor-pointer">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-success/10 flex items-center justify-center mb-2">
-                <FileText className="w-6 h-6 text-success" />
-              </div>
-              <CardTitle>Relatórios</CardTitle>
-              <CardDescription>
-                Gere relatórios automáticos e dashboards
-              </CardDescription>
-            </CardHeader>
-          </Card>
 
           <Card className="hover:shadow-lg transition-smooth cursor-pointer" onClick={() => navigate("/people")}>
             <CardHeader>
@@ -247,19 +272,7 @@ export default function Dashboard() {
               </div>
               <CardTitle>Gestão de Pessoas</CardTitle>
               <CardDescription>
-                Licença médica, bem-estar e benefícios para colaboradores
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-smooth cursor-pointer">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mb-2">
-                <Settings className="w-6 h-6 text-foreground" />
-              </div>
-              <CardTitle>Configurações</CardTitle>
-              <CardDescription>
-                Ajuste preferências e integrações
+                Licença médica, bem-estar e benefícios
               </CardDescription>
             </CardHeader>
           </Card>
