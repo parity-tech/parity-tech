@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   AlertTriangle, 
   Clock, 
@@ -12,7 +13,8 @@ import {
   DollarSign, 
   FileText,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -36,13 +38,11 @@ interface AlertData {
 export default function Alerts() {
   const [alerts, setAlerts] = useState<AlertData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadAlerts();
-  }, []);
-
-  const loadAlerts = async () => {
+  // Memoized para evitar re-renders desnecessários
+  const loadAlerts = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('alerts')
@@ -69,9 +69,34 @@ export default function Alerts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const acknowledgeAlert = async (alertId: string, eventId: string) => {
+  useEffect(() => {
+    loadAlerts();
+
+    // Realtime subscription para updates automáticos
+    const channel = supabase
+      .channel('alerts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'alerts'
+        },
+        () => {
+          loadAlerts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadAlerts]);
+
+  const acknowledgeAlert = useCallback(async (alertId: string, eventId: string) => {
+    setActionLoading(eventId);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
@@ -89,10 +114,10 @@ export default function Alerts() {
 
       toast({
         title: "Sucesso",
-        description: "Alerta reconhecido"
+        description: "Alerta reconhecido com sucesso"
       });
 
-      loadAlerts();
+      await loadAlerts();
     } catch (error) {
       console.error('Error acknowledging alert:', error);
       toast({
@@ -100,10 +125,13 @@ export default function Alerts() {
         description: "Não foi possível reconhecer o alerta",
         variant: "destructive"
       });
+    } finally {
+      setActionLoading(null);
     }
-  };
+  }, [loadAlerts, toast]);
 
-  const deactivateAlert = async (alertId: string) => {
+  const deactivateAlert = useCallback(async (alertId: string) => {
+    setActionLoading(alertId);
     try {
       const { error } = await supabase
         .from('alerts')
@@ -114,10 +142,10 @@ export default function Alerts() {
 
       toast({
         title: "Sucesso",
-        description: "Alerta desativado"
+        description: "Alerta desativado com sucesso"
       });
 
-      loadAlerts();
+      await loadAlerts();
     } catch (error) {
       console.error('Error deactivating alert:', error);
       toast({
@@ -125,8 +153,10 @@ export default function Alerts() {
         description: "Não foi possível desativar o alerta",
         variant: "destructive"
       });
+    } finally {
+      setActionLoading(null);
     }
-  };
+  }, [loadAlerts, toast]);
 
   const getAlertIcon = (type: string) => {
     switch (type) {
@@ -171,43 +201,67 @@ export default function Alerts() {
     }
   };
 
-  const filterAlertsByType = (type: string) => {
-    return alerts.filter(alert => alert.type === type);
-  };
+  // Memoização para evitar re-cálculos
+  const alertsByType = useMemo(() => ({
+    time_log: alerts.filter(a => a.type === 'time_log_recurrence'),
+    download: alerts.filter(a => a.type === 'download_risk'),
+    overtime: alerts.filter(a => a.type === 'overtime_alert'),
+    reimbursement: alerts.filter(a => a.type === 'reimbursement_fraud'),
+    goals: alerts.filter(a => a.type === 'goal_underperformance')
+  }), [alerts]);
 
-  const renderAlertCard = (alert: AlertData) => {
+  const alertsCount = useMemo(() => ({
+    total: alerts.length,
+    active: alerts.filter(a => a.is_active).length,
+    time_log: alertsByType.time_log.length,
+    download: alertsByType.download.length,
+    overtime: alertsByType.overtime.length,
+    reimbursement: alertsByType.reimbursement.length,
+    goals: alertsByType.goals.length
+  }), [alerts, alertsByType]);
+
+  const renderAlertCard = useCallback((alert: AlertData) => {
     const latestEvent = alert.alert_events?.[0];
     const isAcknowledged = latestEvent?.acknowledged;
+    const isProcessing = actionLoading === alert.id || actionLoading === latestEvent?.id;
 
     return (
-      <Card key={alert.id} className="mb-4">
+      <Card key={alert.id} className="mb-4" role="article" aria-labelledby={`alert-title-${alert.id}`}>
         <CardHeader>
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3">
-              <div className="mt-1">{getAlertIcon(alert.type)}</div>
+              <div className="mt-1" aria-hidden="true">{getAlertIcon(alert.type)}</div>
               <div>
-                <CardTitle className="text-lg">{alert.title}</CardTitle>
+                <CardTitle id={`alert-title-${alert.id}`} className="text-lg">
+                  {alert.title}
+                </CardTitle>
                 <CardDescription className="mt-1">
                   {alert.description}
                 </CardDescription>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Badge variant={getPriorityColor(alert.priority)}>
+            <div className="flex gap-2 flex-wrap">
+              <Badge variant={getPriorityColor(alert.priority)} aria-label={`Prioridade: ${getPriorityLabel(alert.priority)}`}>
                 {getPriorityLabel(alert.priority)}
               </Badge>
               {alert.is_active ? (
-                <Badge variant="outline">Ativo</Badge>
+                <Badge variant="outline" aria-label="Status: Ativo">Ativo</Badge>
               ) : (
-                <Badge variant="secondary">Inativo</Badge>
+                <Badge variant="secondary" aria-label="Status: Inativo">Inativo</Badge>
               )}
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <p className="text-sm text-muted-foreground">
-              Criado em: {new Date(alert.created_at).toLocaleDateString('pt-BR')}
+              <time dateTime={alert.created_at}>
+                Criado em: {new Date(alert.created_at).toLocaleDateString('pt-BR', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric'
+                })}
+              </time>
             </p>
             <div className="flex gap-2">
               {alert.is_active && latestEvent && !isAcknowledged && (
@@ -215,8 +269,14 @@ export default function Alerts() {
                   size="sm"
                   variant="outline"
                   onClick={() => acknowledgeAlert(alert.id, latestEvent.id)}
+                  disabled={isProcessing}
+                  aria-label="Reconhecer alerta"
                 >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  {isProcessing && actionLoading === latestEvent.id ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                  )}
                   Reconhecer
                 </Button>
               )}
@@ -225,8 +285,14 @@ export default function Alerts() {
                   size="sm"
                   variant="outline"
                   onClick={() => deactivateAlert(alert.id)}
+                  disabled={isProcessing}
+                  aria-label="Desativar alerta"
                 >
-                  <XCircle className="h-4 w-4 mr-2" />
+                  {isProcessing && actionLoading === alert.id ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <XCircle className="h-4 w-4 mr-2" />
+                  )}
                   Desativar
                 </Button>
               )}
@@ -235,29 +301,64 @@ export default function Alerts() {
         </CardContent>
       </Card>
     );
-  };
+  }, [acknowledgeAlert, deactivateAlert, actionLoading, getAlertIcon, getPriorityColor, getPriorityLabel]);
 
   if (loading) {
     return (
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">Alertas de Risco</h1>
-        <p>Carregando...</p>
+        <div className="space-y-4" role="status" aria-label="Carregando alertas">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="mb-4">
+              <CardHeader>
+                <div className="flex items-start gap-3">
+                  <Skeleton className="h-5 w-5 rounded" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-10 w-32" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <span className="sr-only">Carregando alertas...</span>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Alertas de Risco</h1>
+      <header className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">Alertas de Risco</h1>
+        <p className="text-muted-foreground">
+          {alertsCount.active} alertas ativos de {alertsCount.total} totais
+        </p>
+      </header>
       
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="all">Todos</TabsTrigger>
-          <TabsTrigger value="time_log">Ponto</TabsTrigger>
-          <TabsTrigger value="download">Downloads</TabsTrigger>
-          <TabsTrigger value="overtime">Horas Extras</TabsTrigger>
-          <TabsTrigger value="reimbursement">Reembolsos</TabsTrigger>
-          <TabsTrigger value="goals">Metas</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-6" role="tablist" aria-label="Categorias de alertas">
+          <TabsTrigger value="all" aria-label={`Todos os alertas (${alertsCount.total})`}>
+            Todos ({alertsCount.total})
+          </TabsTrigger>
+          <TabsTrigger value="time_log" aria-label={`Alertas de ponto (${alertsCount.time_log})`}>
+            Ponto ({alertsCount.time_log})
+          </TabsTrigger>
+          <TabsTrigger value="download" aria-label={`Alertas de downloads (${alertsCount.download})`}>
+            Downloads ({alertsCount.download})
+          </TabsTrigger>
+          <TabsTrigger value="overtime" aria-label={`Alertas de horas extras (${alertsCount.overtime})`}>
+            Horas ({alertsCount.overtime})
+          </TabsTrigger>
+          <TabsTrigger value="reimbursement" aria-label={`Alertas de reembolsos (${alertsCount.reimbursement})`}>
+            Reembolsos ({alertsCount.reimbursement})
+          </TabsTrigger>
+          <TabsTrigger value="goals" aria-label={`Alertas de metas (${alertsCount.goals})`}>
+            Metas ({alertsCount.goals})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="mt-6">
@@ -273,68 +374,83 @@ export default function Alerts() {
           )}
         </TabsContent>
 
-        <TabsContent value="time_log" className="mt-6">
-          {filterAlertsByType('time_log_recurrence').length === 0 ? (
+        <TabsContent value="time_log" className="mt-6" role="tabpanel">
+          {alertsByType.time_log.length === 0 ? (
             <Alert>
+              <Clock className="h-4 w-4" />
               <AlertTitle>Nenhum alerta de ponto</AlertTitle>
               <AlertDescription>
                 Não há alertas de ponto eletrônico no momento.
               </AlertDescription>
             </Alert>
           ) : (
-            filterAlertsByType('time_log_recurrence').map(renderAlertCard)
+            <div role="list" aria-label="Alertas de ponto eletrônico">
+              {alertsByType.time_log.map(renderAlertCard)}
+            </div>
           )}
         </TabsContent>
 
-        <TabsContent value="download" className="mt-6">
-          {filterAlertsByType('download_risk').length === 0 ? (
+        <TabsContent value="download" className="mt-6" role="tabpanel">
+          {alertsByType.download.length === 0 ? (
             <Alert>
+              <Download className="h-4 w-4" />
               <AlertTitle>Nenhum alerta de download</AlertTitle>
               <AlertDescription>
                 Não há alertas de downloads com risco no momento.
               </AlertDescription>
             </Alert>
           ) : (
-            filterAlertsByType('download_risk').map(renderAlertCard)
+            <div role="list" aria-label="Alertas de downloads">
+              {alertsByType.download.map(renderAlertCard)}
+            </div>
           )}
         </TabsContent>
 
-        <TabsContent value="overtime" className="mt-6">
-          {filterAlertsByType('overtime_alert').length === 0 ? (
+        <TabsContent value="overtime" className="mt-6" role="tabpanel">
+          {alertsByType.overtime.length === 0 ? (
             <Alert>
+              <Clock className="h-4 w-4" />
               <AlertTitle>Nenhum alerta de horas extras</AlertTitle>
               <AlertDescription>
                 Não há alertas de horas extras no momento.
               </AlertDescription>
             </Alert>
           ) : (
-            filterAlertsByType('overtime_alert').map(renderAlertCard)
+            <div role="list" aria-label="Alertas de horas extras">
+              {alertsByType.overtime.map(renderAlertCard)}
+            </div>
           )}
         </TabsContent>
 
-        <TabsContent value="reimbursement" className="mt-6">
-          {filterAlertsByType('reimbursement_fraud').length === 0 ? (
+        <TabsContent value="reimbursement" className="mt-6" role="tabpanel">
+          {alertsByType.reimbursement.length === 0 ? (
             <Alert>
+              <DollarSign className="h-4 w-4" />
               <AlertTitle>Nenhum alerta de reembolso</AlertTitle>
               <AlertDescription>
                 Não há alertas de possíveis fraudes em reembolsos no momento.
               </AlertDescription>
             </Alert>
           ) : (
-            filterAlertsByType('reimbursement_fraud').map(renderAlertCard)
+            <div role="list" aria-label="Alertas de reembolsos">
+              {alertsByType.reimbursement.map(renderAlertCard)}
+            </div>
           )}
         </TabsContent>
 
-        <TabsContent value="goals" className="mt-6">
-          {filterAlertsByType('goal_underperformance').length === 0 ? (
+        <TabsContent value="goals" className="mt-6" role="tabpanel">
+          {alertsByType.goals.length === 0 ? (
             <Alert>
+              <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Nenhum alerta de metas</AlertTitle>
               <AlertDescription>
                 Não há alertas de metas abaixo do esperado no momento.
               </AlertDescription>
             </Alert>
           ) : (
-            filterAlertsByType('goal_underperformance').map(renderAlertCard)
+            <div role="list" aria-label="Alertas de metas">
+              {alertsByType.goals.map(renderAlertCard)}
+            </div>
           )}
         </TabsContent>
       </Tabs>
