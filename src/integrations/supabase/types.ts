@@ -80,30 +80,42 @@ export type Database = {
           acknowledged: boolean | null
           acknowledged_at: string | null
           acknowledged_by: string | null
+          ai_suggested_actions: string | null
           alert_id: string
           company_id: string
+          corrective_action_document: string | null
           created_at: string
           id: string
+          risk_level: string | null
+          risk_score: number | null
           triggered_by_data: Json
         }
         Insert: {
           acknowledged?: boolean | null
           acknowledged_at?: string | null
           acknowledged_by?: string | null
+          ai_suggested_actions?: string | null
           alert_id: string
           company_id: string
+          corrective_action_document?: string | null
           created_at?: string
           id?: string
+          risk_level?: string | null
+          risk_score?: number | null
           triggered_by_data: Json
         }
         Update: {
           acknowledged?: boolean | null
           acknowledged_at?: string | null
           acknowledged_by?: string | null
+          ai_suggested_actions?: string | null
           alert_id?: string
           company_id?: string
+          corrective_action_document?: string | null
           created_at?: string
           id?: string
+          risk_level?: string | null
+          risk_score?: number | null
           triggered_by_data?: Json
         }
         Relationships: [
@@ -135,6 +147,8 @@ export type Database = {
           last_triggered_at: string | null
           notify_users: string[] | null
           priority: Database["public"]["Enums"]["alert_priority"]
+          risk_level: string | null
+          risk_score: number | null
           title: string
           triggered_count: number | null
           type: Database["public"]["Enums"]["alert_type"]
@@ -151,6 +165,8 @@ export type Database = {
           last_triggered_at?: string | null
           notify_users?: string[] | null
           priority?: Database["public"]["Enums"]["alert_priority"]
+          risk_level?: string | null
+          risk_score?: number | null
           title: string
           triggered_count?: number | null
           type: Database["public"]["Enums"]["alert_type"]
@@ -167,6 +183,8 @@ export type Database = {
           last_triggered_at?: string | null
           notify_users?: string[] | null
           priority?: Database["public"]["Enums"]["alert_priority"]
+          risk_level?: string | null
+          risk_score?: number | null
           title?: string
           triggered_count?: number | null
           type?: Database["public"]["Enums"]["alert_type"]
@@ -522,6 +540,92 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      corrective_actions: {
+        Row: {
+          alert_event_id: string
+          alert_id: string
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          delivered_at: string | null
+          department_id: string | null
+          document_content: string
+          document_path: string | null
+          id: string
+          occurrence_date: string
+          occurrence_type: string
+          signed_at: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_event_id: string
+          alert_id: string
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          delivered_at?: string | null
+          department_id?: string | null
+          document_content: string
+          document_path?: string | null
+          id?: string
+          occurrence_date: string
+          occurrence_type: string
+          signed_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_event_id?: string
+          alert_id?: string
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          delivered_at?: string | null
+          department_id?: string | null
+          document_content?: string
+          document_path?: string | null
+          id?: string
+          occurrence_date?: string
+          occurrence_type?: string
+          signed_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corrective_actions_alert_event_id_fkey"
+            columns: ["alert_event_id"]
+            isOneToOne: false
+            referencedRelation: "alert_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "corrective_actions_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "corrective_actions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "corrective_actions_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       department_permissions: {
         Row: {

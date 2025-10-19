@@ -27,11 +27,16 @@ interface AlertData {
   is_active: boolean;
   created_at: string;
   conditions: any;
+  risk_score?: number;
+  risk_level?: string;
   alert_events: Array<{
     id: string;
     acknowledged: boolean;
     acknowledged_at: string | null;
     acknowledged_by: string | null;
+    risk_score?: number;
+    risk_level?: string;
+    ai_suggested_actions?: string;
   }>;
 }
 
@@ -52,7 +57,10 @@ export default function Alerts() {
             id,
             acknowledged,
             acknowledged_at,
-            acknowledged_by
+            acknowledged_by,
+            risk_score,
+            risk_level,
+            ai_suggested_actions
           )
         `)
         .order('created_at', { ascending: false });
@@ -123,6 +131,33 @@ export default function Alerts() {
       toast({
         title: "Erro",
         description: "Não foi possível reconhecer o alerta",
+        variant: "destructive"
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  }, [loadAlerts, toast]);
+
+  const processRiskAlert = useCallback(async (alertEventId: string) => {
+    setActionLoading(alertEventId);
+    try {
+      const { data, error } = await supabase.functions.invoke('process-risk-alert', {
+        body: { alertEventId }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: data.message || "Alerta processado com cálculo de risco",
+      });
+
+      await loadAlerts();
+    } catch (error) {
+      console.error('Error processing risk alert:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível processar o alerta",
         variant: "destructive"
       });
     } finally {
@@ -201,6 +236,46 @@ export default function Alerts() {
     }
   };
 
+  const getRiskLevelColor = (riskLevel: string | undefined) => {
+    if (!riskLevel) return 'secondary';
+    switch (riskLevel) {
+      case 'grave':
+        return 'destructive';
+      case 'alto':
+        return 'destructive';
+      case 'medio':
+        return 'default';
+      case 'baixo':
+        return 'outline';
+      default:
+        return 'secondary';
+    }
+  };
+
+  const getRiskLevelLabel = (riskLevel: string | undefined) => {
+    if (!riskLevel) return 'N/A';
+    switch (riskLevel) {
+      case 'grave':
+        return 'Grave';
+      case 'alto':
+        return 'Alto';
+      case 'medio':
+        return 'Médio';
+      case 'baixo':
+        return 'Baixo';
+      default:
+        return riskLevel;
+    }
+  };
+
+  const getRiskScoreColor = (score: number | undefined) => {
+    if (score === undefined) return 'text-muted-foreground';
+    if (score >= 81) return 'text-destructive';
+    if (score >= 61) return 'text-orange-600';
+    if (score >= 31) return 'text-yellow-600';
+    return 'text-green-600';
+  };
+
   // Memoização para evitar re-cálculos
   const alertsByType = useMemo(() => ({
     time_log: alerts.filter(a => a.type === 'time_log_recurrence'),
@@ -244,6 +319,16 @@ export default function Alerts() {
               <Badge variant={getPriorityColor(alert.priority)} aria-label={`Prioridade: ${getPriorityLabel(alert.priority)}`}>
                 {getPriorityLabel(alert.priority)}
               </Badge>
+              {latestEvent?.risk_level && (
+                <Badge variant={getRiskLevelColor(latestEvent.risk_level)} aria-label={`Risco: ${getRiskLevelLabel(latestEvent.risk_level)}`}>
+                  Risco: {getRiskLevelLabel(latestEvent.risk_level)}
+                </Badge>
+              )}
+              {latestEvent?.risk_score !== undefined && (
+                <Badge variant="outline" className={getRiskScoreColor(latestEvent.risk_score)} aria-label={`Score: ${latestEvent.risk_score}/100`}>
+                  Score: {latestEvent.risk_score}/100
+                </Badge>
+              )}
               {alert.is_active ? (
                 <Badge variant="outline" aria-label="Status: Ativo">Ativo</Badge>
               ) : (
@@ -253,6 +338,15 @@ export default function Alerts() {
           </div>
         </CardHeader>
         <CardContent>
+          {latestEvent?.ai_suggested_actions && (
+            <Alert className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Sugestões de Ações (IA Jurídica)</AlertTitle>
+              <AlertDescription className="whitespace-pre-wrap">
+                {latestEvent.ai_suggested_actions}
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="flex items-center justify-between flex-wrap gap-4">
             <p className="text-sm text-muted-foreground">
               <time dateTime={alert.created_at}>
@@ -264,6 +358,22 @@ export default function Alerts() {
               </time>
             </p>
             <div className="flex gap-2">
+              {alert.is_active && latestEvent && !latestEvent.risk_score && (
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={() => processRiskAlert(latestEvent.id)}
+                  disabled={isProcessing}
+                  aria-label="Processar e calcular risco"
+                >
+                  {isProcessing && actionLoading === latestEvent.id ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                  )}
+                  Processar Risco
+                </Button>
+              )}
               {alert.is_active && latestEvent && !isAcknowledged && (
                 <Button
                   size="sm"
@@ -301,7 +411,7 @@ export default function Alerts() {
         </CardContent>
       </Card>
     );
-  }, [acknowledgeAlert, deactivateAlert, actionLoading, getAlertIcon, getPriorityColor, getPriorityLabel]);
+  }, [acknowledgeAlert, deactivateAlert, processRiskAlert, actionLoading, getAlertIcon, getPriorityColor, getPriorityLabel, getRiskLevelColor, getRiskLevelLabel, getRiskScoreColor]);
 
   if (loading) {
     return (
