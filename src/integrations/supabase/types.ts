@@ -442,6 +442,86 @@ export type Database = {
           },
         ]
       }
+      download_logs: {
+        Row: {
+          access_location: string | null
+          company_id: string
+          contains_pii: boolean | null
+          created_at: string
+          device_info: Json | null
+          download_timestamp: string
+          file_name: string
+          file_path: string
+          file_size_bytes: number | null
+          file_type: string | null
+          id: string
+          ip_address: unknown | null
+          is_sensitive: boolean | null
+          latitude: number | null
+          lgpd_risk_score: number | null
+          litigation_risk_score: number | null
+          longitude: number | null
+          overall_risk_level: Database["public"]["Enums"]["risk_level"] | null
+          risk_factors: Json | null
+          security_risk_score: number | null
+          user_id: string
+        }
+        Insert: {
+          access_location?: string | null
+          company_id: string
+          contains_pii?: boolean | null
+          created_at?: string
+          device_info?: Json | null
+          download_timestamp?: string
+          file_name: string
+          file_path: string
+          file_size_bytes?: number | null
+          file_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_sensitive?: boolean | null
+          latitude?: number | null
+          lgpd_risk_score?: number | null
+          litigation_risk_score?: number | null
+          longitude?: number | null
+          overall_risk_level?: Database["public"]["Enums"]["risk_level"] | null
+          risk_factors?: Json | null
+          security_risk_score?: number | null
+          user_id: string
+        }
+        Update: {
+          access_location?: string | null
+          company_id?: string
+          contains_pii?: boolean | null
+          created_at?: string
+          device_info?: Json | null
+          download_timestamp?: string
+          file_name?: string
+          file_path?: string
+          file_size_bytes?: number | null
+          file_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_sensitive?: boolean | null
+          latitude?: number | null
+          lgpd_risk_score?: number | null
+          litigation_risk_score?: number | null
+          longitude?: number | null
+          overall_risk_level?: Database["public"]["Enums"]["risk_level"] | null
+          risk_factors?: Json | null
+          security_risk_score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "download_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback_threads: {
         Row: {
           assigned_to: string | null
@@ -897,6 +977,158 @@ export type Database = {
           },
         ]
       }
+      medical_certificates: {
+        Row: {
+          certificate_number: string | null
+          company_id: string
+          created_at: string
+          days_count: number
+          doctor_crm: string | null
+          doctor_name: string | null
+          document_path: string | null
+          end_date: string
+          id: string
+          is_suspicious: boolean | null
+          issue_date: string
+          medical_reason: string | null
+          review_date: string | null
+          review_notes: string | null
+          reviewed_by: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["certificate_status"]
+          suspicious_reasons: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          certificate_number?: string | null
+          company_id: string
+          created_at?: string
+          days_count: number
+          doctor_crm?: string | null
+          doctor_name?: string | null
+          document_path?: string | null
+          end_date: string
+          id?: string
+          is_suspicious?: boolean | null
+          issue_date: string
+          medical_reason?: string | null
+          review_date?: string | null
+          review_notes?: string | null
+          reviewed_by?: string | null
+          start_date: string
+          status?: Database["public"]["Enums"]["certificate_status"]
+          suspicious_reasons?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          certificate_number?: string | null
+          company_id?: string
+          created_at?: string
+          days_count?: number
+          doctor_crm?: string | null
+          doctor_name?: string | null
+          document_path?: string | null
+          end_date?: string
+          id?: string
+          is_suspicious?: boolean | null
+          issue_date?: string
+          medical_reason?: string | null
+          review_date?: string | null
+          review_notes?: string | null
+          reviewed_by?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["certificate_status"]
+          suspicious_reasons?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_certificates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      overtime_records: {
+        Row: {
+          approval_date: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          department_id: string | null
+          expected_hours: number
+          has_alert: boolean | null
+          has_overtime_approval: boolean | null
+          id: string
+          overtime_hours: number | null
+          overtime_reason: string | null
+          record_date: string
+          regular_hours: number | null
+          risk_score: number | null
+          undertime_hours: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approval_date?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          department_id?: string | null
+          expected_hours?: number
+          has_alert?: boolean | null
+          has_overtime_approval?: boolean | null
+          id?: string
+          overtime_hours?: number | null
+          overtime_reason?: string | null
+          record_date: string
+          regular_hours?: number | null
+          risk_score?: number | null
+          undertime_hours?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approval_date?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          department_id?: string | null
+          expected_hours?: number
+          has_alert?: boolean | null
+          has_overtime_approval?: boolean | null
+          id?: string
+          overtime_hours?: number | null
+          overtime_reason?: string | null
+          record_date?: string
+          regular_hours?: number | null
+          risk_score?: number | null
+          undertime_hours?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "overtime_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "overtime_records_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -948,6 +1180,144 @@ export type Database = {
           },
         ]
       }
+      reimbursement_documents: {
+        Row: {
+          company_id: string
+          document_name: string
+          document_path: string
+          document_type: string
+          file_size_bytes: number | null
+          id: string
+          is_valid: boolean | null
+          reimbursement_id: string
+          uploaded_at: string
+          validation_notes: string | null
+        }
+        Insert: {
+          company_id: string
+          document_name: string
+          document_path: string
+          document_type: string
+          file_size_bytes?: number | null
+          id?: string
+          is_valid?: boolean | null
+          reimbursement_id: string
+          uploaded_at?: string
+          validation_notes?: string | null
+        }
+        Update: {
+          company_id?: string
+          document_name?: string
+          document_path?: string
+          document_type?: string
+          file_size_bytes?: number | null
+          id?: string
+          is_valid?: boolean | null
+          reimbursement_id?: string
+          uploaded_at?: string
+          validation_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reimbursement_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reimbursement_documents_reimbursement_id_fkey"
+            columns: ["reimbursement_id"]
+            isOneToOne: false
+            referencedRelation: "reimbursements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reimbursements: {
+        Row: {
+          amount: number
+          category: string
+          company_id: string
+          created_at: string
+          department_id: string | null
+          description: string | null
+          expense_date: string
+          fraud_indicators: Json | null
+          fraud_risk_level: Database["public"]["Enums"]["risk_level"] | null
+          fraud_risk_score: number | null
+          has_all_documents: boolean | null
+          id: string
+          missing_documents: Json | null
+          review_date: string | null
+          review_notes: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["reimbursement_status"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          company_id: string
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          expense_date: string
+          fraud_indicators?: Json | null
+          fraud_risk_level?: Database["public"]["Enums"]["risk_level"] | null
+          fraud_risk_score?: number | null
+          has_all_documents?: boolean | null
+          id?: string
+          missing_documents?: Json | null
+          review_date?: string | null
+          review_notes?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["reimbursement_status"]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          company_id?: string
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          expense_date?: string
+          fraud_indicators?: Json | null
+          fraud_risk_level?: Database["public"]["Enums"]["risk_level"] | null
+          fraud_risk_score?: number | null
+          has_all_documents?: boolean | null
+          id?: string
+          missing_documents?: Json | null
+          review_date?: string | null
+          review_notes?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["reimbursement_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reimbursements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reimbursements_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           company_id: string
@@ -988,6 +1358,89 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "reports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_logs: {
+        Row: {
+          actual_time: string
+          company_id: string
+          created_at: string
+          device_info: Json | null
+          distance_from_expected_meters: number | null
+          expected_location_lat: number | null
+          expected_location_lng: number | null
+          expected_time: string | null
+          has_irregularity: boolean | null
+          id: string
+          ip_address: unknown | null
+          irregularity_reason: string | null
+          is_late: boolean | null
+          latitude: number | null
+          location_address: string | null
+          location_risk_score: number | null
+          log_date: string
+          log_type: Database["public"]["Enums"]["time_log_type"]
+          longitude: number | null
+          minutes_difference: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_time: string
+          company_id: string
+          created_at?: string
+          device_info?: Json | null
+          distance_from_expected_meters?: number | null
+          expected_location_lat?: number | null
+          expected_location_lng?: number | null
+          expected_time?: string | null
+          has_irregularity?: boolean | null
+          id?: string
+          ip_address?: unknown | null
+          irregularity_reason?: string | null
+          is_late?: boolean | null
+          latitude?: number | null
+          location_address?: string | null
+          location_risk_score?: number | null
+          log_date: string
+          log_type: Database["public"]["Enums"]["time_log_type"]
+          longitude?: number | null
+          minutes_difference?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_time?: string
+          company_id?: string
+          created_at?: string
+          device_info?: Json | null
+          distance_from_expected_meters?: number | null
+          expected_location_lat?: number | null
+          expected_location_lng?: number | null
+          expected_time?: string | null
+          has_irregularity?: boolean | null
+          id?: string
+          ip_address?: unknown | null
+          irregularity_reason?: string | null
+          is_late?: boolean | null
+          latitude?: number | null
+          location_address?: string | null
+          location_risk_score?: number | null
+          log_date?: string
+          log_type?: Database["public"]["Enums"]["time_log_type"]
+          longitude?: number | null
+          minutes_difference?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_logs_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
@@ -1064,6 +1517,7 @@ export type Database = {
         | "api_lento"
         | "uso_anormal"
         | "personalizado"
+      certificate_status: "pendente" | "aprovado" | "rejeitado"
       content_type: "video" | "pdf" | "quiz" | "external_link"
       department_type:
         | "administrativo"
@@ -1098,6 +1552,9 @@ export type Database = {
       goal_period: "daily" | "weekly" | "monthly" | "quarterly" | "yearly"
       integration_status: "ativo" | "inativo" | "erro" | "pendente"
       integration_type: "erp" | "crm" | "financeiro" | "rh" | "outro"
+      reimbursement_status: "pendente" | "em_analise" | "aprovado" | "rejeitado"
+      risk_level: "baixo" | "medio" | "alto" | "critico"
+      time_log_type: "entrada" | "saida_almoco" | "retorno_almoco" | "saida"
       user_role: "admin" | "gestor" | "usuario"
     }
     CompositeTypes: {
@@ -1242,6 +1699,7 @@ export const Constants = {
         "uso_anormal",
         "personalizado",
       ],
+      certificate_status: ["pendente", "aprovado", "rejeitado"],
       content_type: ["video", "pdf", "quiz", "external_link"],
       department_type: [
         "administrativo",
@@ -1279,6 +1737,9 @@ export const Constants = {
       goal_period: ["daily", "weekly", "monthly", "quarterly", "yearly"],
       integration_status: ["ativo", "inativo", "erro", "pendente"],
       integration_type: ["erp", "crm", "financeiro", "rh", "outro"],
+      reimbursement_status: ["pendente", "em_analise", "aprovado", "rejeitado"],
+      risk_level: ["baixo", "medio", "alto", "critico"],
+      time_log_type: ["entrada", "saida_almoco", "retorno_almoco", "saida"],
       user_role: ["admin", "gestor", "usuario"],
     },
   },

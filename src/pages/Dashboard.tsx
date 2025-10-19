@@ -216,14 +216,14 @@ export default function Dashboard() {
             </CardHeader>
           </Card>
 
-          <Card className="hover:shadow-lg transition-smooth cursor-pointer">
+          <Card className="hover:shadow-lg transition-smooth cursor-pointer" onClick={() => navigate("/alerts")}>
             <CardHeader>
               <div className="w-12 h-12 rounded-lg bg-warning/10 flex items-center justify-center mb-2">
                 <AlertTriangle className="w-6 h-6 text-warning" />
               </div>
               <CardTitle>Alertas</CardTitle>
               <CardDescription>
-                Configure e monitore alertas personalizados
+                Score de risco trabalhista, segurança da informação e LGPD
               </CardDescription>
             </CardHeader>
           </Card>

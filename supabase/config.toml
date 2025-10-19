@@ -8,3 +8,15 @@ verify_jwt = false
 
 [functions.check-goal-alerts]
 verify_jwt = false
+
+[functions.process-time-log]
+verify_jwt = false
+
+[functions.process-download-log]
+verify_jwt = false
+
+[functions.check-overtime-alerts]
+verify_jwt = false
+
+[functions.check-reimbursement-fraud]
+verify_jwt = false
