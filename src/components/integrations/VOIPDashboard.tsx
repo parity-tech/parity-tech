@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Phone, Clock, Download, TrendingUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import VOIPIntegrationSetup from "./VOIPIntegrationSetup";
 
 interface VOIPDashboardProps {
   department: string;
@@ -116,19 +117,7 @@ export default function VOIPDashboard({ department }: VOIPDashboardProps) {
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Configuração VOIP</CardTitle>
-          <CardDescription>
-            Configure a integração com seu sistema de telefonia para rastreamento automático de chamadas
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Configuração de integração VOIP em desenvolvimento
-          </p>
-        </CardContent>
-      </Card>
+      <VOIPIntegrationSetup />
     </div>
   );
 }

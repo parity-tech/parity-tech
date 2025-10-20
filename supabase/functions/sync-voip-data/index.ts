@@ -23,6 +23,44 @@ interface SyncRequest {
   };
 }
 
+// Transform calls data from different providers to standard format
+function transformCallsData(provider: string, data: any): VOIPCallData[] {
+  switch (provider) {
+    case 'zenvia':
+      return (data.calls || []).map((call: any) => ({
+        user_id: call.user_id,
+        call_duration_seconds: call.duration,
+        call_timestamp: call.timestamp,
+        call_direction: call.direction,
+        phone_number: call.phone_number,
+        metadata: { call_id: call.id, status: call.status },
+      }));
+
+    case 'twilio':
+      return (data.calls || []).map((call: any) => ({
+        user_id: call.from_user_id,
+        call_duration_seconds: parseInt(call.duration),
+        call_timestamp: call.start_time,
+        call_direction: call.direction,
+        phone_number: call.to,
+        metadata: { call_id: call.sid, status: call.status },
+      }));
+
+    case 'vonage':
+      return (data.records || []).map((call: any) => ({
+        user_id: call.user_id,
+        call_duration_seconds: call.duration,
+        call_timestamp: call.start_time,
+        call_direction: call.direction,
+        phone_number: call.to.number,
+        metadata: { call_id: call.uuid, status: call.status },
+      }));
+
+    default:
+      return [];
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -52,30 +90,74 @@ serve(async (req) => {
     const errors: string[] = [];
 
     try {
-      // Aqui você implementaria a lógica para buscar dados do sistema VOIP
-      // Exemplos: Twilio, Vonage, 3CX, Asterisk, etc.
+      let apiUrl = '';
+      let headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Configure API calls based on provider
+      switch (integration.name) {
+        case 'zenvia':
+          apiUrl = integration.base_url + '/v2/reports/calls';
+          headers['X-API-TOKEN'] = integration.credentials_encrypted || '';
+          break;
+
+        case 'twilio':
+          apiUrl = `${integration.base_url}/2010-04-01/Accounts/ACCOUNT_SID/Calls.json`;
+          const twilioAuth = btoa(integration.credentials_encrypted || '');
+          headers['Authorization'] = `Basic ${twilioAuth}`;
+          break;
+
+        case 'vonage':
+          apiUrl = `${integration.base_url}/v1/calls`;
+          headers['Authorization'] = `Bearer ${integration.credentials_encrypted}`;
+          break;
+
+        default:
+          throw new Error(`Provedor ${integration.name} não implementado`);
+      }
+
+      // Add date range to query if provided
+      if (payload.date_range) {
+        const params = new URLSearchParams({
+          start_date: payload.date_range.start,
+          end_date: payload.date_range.end,
+        });
+        apiUrl += `?${params.toString()}`;
+      }
+
+      console.log('Fetching VOIP data from:', integration.name);
+
+      const response = await fetch(apiUrl, { headers });
       
-      // const voipCalls: VOIPCallData[] = await fetchVOIPCalls(integration, payload.date_range);
+      if (!response.ok) {
+        throw new Error(`API returned ${response.status}`);
+      }
+
+      const callsData = await response.json();
+      const voipCalls: VOIPCallData[] = transformCallsData(integration.name, callsData);
+
+      // Insert activity events for each call
+      for (const call of voipCalls) {
+        await supabase.from('activity_events').insert({
+          company_id: integration.company_id,
+          user_id: call.user_id,
+          activity_type: 'call',
+          external_system: 'phone_system',
+          external_id: call.metadata?.call_id,
+          timestamp: call.call_timestamp,
+          duration_seconds: call.call_duration_seconds,
+          metadata: {
+            direction: call.call_direction,
+            phone_number: call.phone_number,
+            provider: integration.name,
+            ...call.metadata,
+          },
+        });
+        syncedCalls++;
+      }
       
-      // Para cada chamada, criar um registro de atividade
-      // for (const call of voipCalls) {
-      //   await supabase.from('activity_events').insert({
-      //     company_id: integration.company_id,
-      //     user_id: call.user_id,
-      //     activity_type: 'call',
-      //     external_system: 'phone_system',
-      //     timestamp: call.call_timestamp,
-      //     duration_seconds: call.call_duration_seconds,
-      //     metadata: {
-      //       direction: call.call_direction,
-      //       phone_number: call.phone_number,
-      //       ...call.metadata,
-      //     },
-      //   });
-      //   syncedCalls++;
-      // }
-      
-      console.log('Sincronização VOIP iniciada');
+      console.log(`Sincronizadas ${syncedCalls} chamadas de ${integration.name}`);
 
       // Log de sucesso
       await supabase.from('api_integration_logs').insert({
