@@ -42,6 +42,9 @@ const DEFAULT_DEPARTMENTS = [
 
 const companySchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(100),
+  primarySector: z.enum(["juridico", "financeiro", "rh"], { 
+    errorMap: () => ({ message: "Selecione o setor principal da empresa" })
+  }),
   cnpj: z.string()
     .regex(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, "CNPJ inválido (formato: 00.000.000/0000-00)")
     .or(z.string().regex(/^\d{14}$/, "CNPJ inválido")),
@@ -64,6 +67,7 @@ export default function CompanyRegistration() {
     resolver: zodResolver(companySchema),
     defaultValues: {
       name: "",
+      primarySector: undefined,
       cnpj: "",
       employeeCountRange: "",
       selectedDepartments: [],
@@ -107,6 +111,7 @@ export default function CompanyRegistration() {
         .from("companies")
         .insert({
           name: data.name,
+          primary_sector: data.primarySector,
           slug: data.name.toLowerCase().replace(/\s+/g, "-"),
           cnpj: data.cnpj.replace(/\D/g, ""),
           employee_count_range: data.employeeCountRange,
@@ -190,6 +195,44 @@ export default function CompanyRegistration() {
                         <FormControl>
                           <Input placeholder="Razão social da empresa" {...field} />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="primarySector"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Setor Principal da Empresa *</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecione o setor principal" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="juridico">
+                              <div className="flex flex-col items-start">
+                                <span className="font-semibold">Jurídico</span>
+                                <span className="text-xs text-muted-foreground">Acesso total a todos os módulos</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="financeiro">
+                              <div className="flex flex-col items-start">
+                                <span className="font-semibold">Financeiro</span>
+                                <span className="text-xs text-muted-foreground">Acesso aos módulos jurídico e financeiro</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="rh">
+                              <div className="flex flex-col items-start">
+                                <span className="font-semibold">RH</span>
+                                <span className="text-xs text-muted-foreground">Acesso aos módulos de gestão de pessoas</span>
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}

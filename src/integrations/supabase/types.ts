@@ -520,6 +520,7 @@ export type Database = {
           is_active: boolean
           metadata: Json | null
           name: string
+          primary_sector: string | null
           selected_departments: string[] | null
           slug: string
           updated_at: string
@@ -532,6 +533,7 @@ export type Database = {
           is_active?: boolean
           metadata?: Json | null
           name: string
+          primary_sector?: string | null
           selected_departments?: string[] | null
           slug: string
           updated_at?: string
@@ -544,6 +546,7 @@ export type Database = {
           is_active?: boolean
           metadata?: Json | null
           name?: string
+          primary_sector?: string | null
           selected_departments?: string[] | null
           slug?: string
           updated_at?: string
@@ -1498,6 +1501,30 @@ export type Database = {
           },
         ]
       }
+      module_access: {
+        Row: {
+          allowed_sectors: string[]
+          created_at: string
+          display_order: number
+          id: string
+          module_name: string
+        }
+        Insert: {
+          allowed_sectors: string[]
+          created_at?: string
+          display_order?: number
+          id?: string
+          module_name: string
+        }
+        Update: {
+          allowed_sectors?: string[]
+          created_at?: string
+          display_order?: number
+          id?: string
+          module_name?: string
+        }
+        Relationships: []
+      }
       overtime_records: {
         Row: {
           approval_date: string | null
@@ -2313,6 +2340,10 @@ export type Database = {
       get_user_department_id: {
         Args: { _user_id: string }
         Returns: string
+      }
+      has_module_access: {
+        Args: { _module_name: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
