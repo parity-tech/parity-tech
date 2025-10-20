@@ -95,7 +95,7 @@ export default function VOIPIntegrationSetup() {
 
       const { error } = await supabase.from("api_integrations").insert([{
         company_id: profile.company_id,
-        type: "phone_system",
+        type: "phone_system" as any,
         name: provider,
         base_url: baseUrl || `https://api.${provider}.com`,
         auth_type: "api_key",
