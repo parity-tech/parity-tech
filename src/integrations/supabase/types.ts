@@ -2405,7 +2405,13 @@ export type Database = {
         | "custom"
       goal_period: "daily" | "weekly" | "monthly" | "quarterly" | "yearly"
       integration_status: "ativo" | "inativo" | "erro" | "pendente"
-      integration_type: "erp" | "crm" | "financeiro" | "rh" | "outro"
+      integration_type:
+        | "erp"
+        | "crm"
+        | "financeiro"
+        | "rh"
+        | "outro"
+        | "phone_system"
       reimbursement_status: "pendente" | "em_analise" | "aprovado" | "rejeitado"
       risk_level: "baixo" | "medio" | "alto" | "critico"
       time_log_type: "entrada" | "saida_almoco" | "retorno_almoco" | "saida"
@@ -2592,7 +2598,14 @@ export const Constants = {
       ],
       goal_period: ["daily", "weekly", "monthly", "quarterly", "yearly"],
       integration_status: ["ativo", "inativo", "erro", "pendente"],
-      integration_type: ["erp", "crm", "financeiro", "rh", "outro"],
+      integration_type: [
+        "erp",
+        "crm",
+        "financeiro",
+        "rh",
+        "outro",
+        "phone_system",
+      ],
       reimbursement_status: ["pendente", "em_analise", "aprovado", "rejeitado"],
       risk_level: ["baixo", "medio", "alto", "critico"],
       time_log_type: ["entrada", "saida_almoco", "retorno_almoco", "saida"],
