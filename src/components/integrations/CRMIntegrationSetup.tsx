@@ -40,12 +40,13 @@ export default function CRMIntegrationSetup() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Usuário não autenticado");
 
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("company_id")
         .eq("id", userData.user.id)
-        .single();
+        .maybeSingle();
 
+      if (profileError) throw profileError;
       if (!profile) throw new Error("Perfil não encontrado");
 
       const { error } = await supabase.from("api_integrations").insert({
