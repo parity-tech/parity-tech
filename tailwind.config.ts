@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        display: ['Montserrat', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -79,6 +80,7 @@ export default {
         "gradient-primary": "var(--gradient-primary)",
         "gradient-accent": "var(--gradient-accent)",
         "gradient-hero": "var(--gradient-hero)",
+        "gradient-hero-overlay": "var(--gradient-hero-overlay)",
         "gradient-subtle": "var(--gradient-subtle)",
       },
       boxShadow: {
