@@ -48,18 +48,36 @@ export default function BIIntegration() {
 
       if (!profile) throw new Error("Perfil não encontrado");
 
+      // Encrypt credentials using Vault via edge function
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) throw new Error("No active session");
+
+      const { data: encryptData, error: encryptError } = await supabase.functions.invoke('encrypt-credentials', {
+        body: { 
+          credentials: apiKey,
+          secret_name: `bi_${platform}_${Date.now()}`
+        }
+      });
+
+      if (encryptError) {
+        console.error('Encryption error:', encryptError);
+        throw new Error('Failed to encrypt credentials');
+      }
+
+      // Store integration with reference to Vault secret
       const { error } = await supabase.from("api_integrations").insert({
         company_id: profile.company_id,
         type: "outro",
         name: platform,
         base_url: embedUrl,
         auth_type: "api_key",
-        credentials_encrypted: apiKey,
+        credentials_encrypted: encryptData.secret_id, // Store secret ID, not the actual key
         status: "ativo",
         created_by: userData.user.id,
         metadata: {
           platform_category: "bi",
           workspace_id: workspaceId,
+          vault_secret_id: encryptData.secret_id
         },
       });
 

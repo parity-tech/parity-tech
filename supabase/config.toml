@@ -1,40 +1,43 @@
 project_id = "zfcbgkbehtyqbqxzafjd"
 
+[functions.encrypt-credentials]
+verify_jwt = true
+
 [functions.webhook-activity-events]
-verify_jwt = false
+verify_jwt = true
 
 [functions.calculate-goal-achievements]
-verify_jwt = false
+verify_jwt = true
 
 [functions.check-goal-alerts]
-verify_jwt = false
+verify_jwt = true
 
 [functions.process-time-log]
-verify_jwt = false
+verify_jwt = true
 
 [functions.process-download-log]
-verify_jwt = false
+verify_jwt = true
 
 [functions.check-overtime-alerts]
-verify_jwt = false
+verify_jwt = true
 
 [functions.check-reimbursement-fraud]
-verify_jwt = false
+verify_jwt = true
 
 [functions.process-medical-leave-extension]
-verify_jwt = false
+verify_jwt = true
 
 [functions.check-medical-leave-alerts]
-verify_jwt = false
+verify_jwt = true
 
 [functions.check-wellness-engagement]
-verify_jwt = false
+verify_jwt = true
 
 [functions.calculate-risk-score]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-corrective-action]
-verify_jwt = false
+verify_jwt = true
 
 [functions.process-risk-alert]
-verify_jwt = false
+verify_jwt = true

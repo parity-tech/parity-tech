@@ -1,10 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Zod validation schema
+const ActivityEventSchema = z.object({
+  company_id: z.string().uuid('Invalid company_id format'),
+  user_id: z.string().uuid('Invalid user_id format'),
+  department_id: z.string().uuid('Invalid department_id format').optional(),
+  activity_type: z.enum(['call', 'email', 'ticket', 'system_access', 'meeting', 'task']),
+  external_system: z.enum(['erp', 'crm', 'helpdesk', 'phone_system', 'email_system', 'project_management']).optional(),
+  external_id: z.string().max(255).optional(),
+  timestamp: z.string().datetime().optional(),
+  duration_seconds: z.number().int().min(0).max(86400).optional(),
+  metadata: z.record(z.any()).optional()
+});
 
 interface ActivityEventPayload {
   company_id: string;
@@ -28,15 +42,66 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const payload: ActivityEventPayload = await req.json();
-    
-    console.log('Received activity event:', payload);
-
-    // Validação básica
-    if (!payload.company_id || !payload.user_id || !payload.activity_type) {
+    // Get authorization header for JWT verification
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: company_id, user_id, activity_type' }),
+        JSON.stringify({ error: 'Unauthorized: Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify JWT and get user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const rawPayload = await req.json();
+    
+    // Validate with Zod
+    const validationResult = ActivityEventSchema.safeParse(rawPayload);
+    if (!validationResult.success) {
+      console.error('Validation error:', validationResult.error);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid payload', 
+          details: validationResult.error.format() 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const payload: ActivityEventPayload = validationResult.data;
+    console.log('Validated activity event:', payload);
+
+    // Verify user has access to the company
+    const { data: userRole, error: roleError } = await supabase
+      .from('user_roles')
+      .select('company_id, role')
+      .eq('user_id', user.id)
+      .eq('company_id', payload.company_id)
+      .single();
+
+    if (roleError || !userRole) {
+      console.error('Authorization failed:', roleError);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: User not authorized for this company' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify the user_id in payload matches authenticated user or user is admin
+    if (payload.user_id !== user.id && userRole.role !== 'admin') {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: Cannot create events for other users' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
