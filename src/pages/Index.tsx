@@ -7,34 +7,34 @@ const Index = () => {
 
   const features = [
     {
-      icon: MapPin,
-      title: "Geolocalização de Logins",
-      description: "Rastreie e monitore a localização de todos os acessos à plataforma"
-    },
-    {
-      icon: Link2,
-      title: "Integrações API",
-      description: "Conecte ERPs, CRMs, sistemas financeiros e de RH"
+      icon: Shield,
+      title: "Prevenção de Passivos Trabalhistas",
+      description: "Identifique e contenha riscos antes que se tornem contenciosos jurídicos"
     },
     {
       icon: AlertTriangle,
-      title: "Sistema de Alertas",
-      description: "Receba notificações sobre eventos importantes em tempo real"
+      title: "Alertas Inteligentes",
+      description: "Monitore automaticamente indicadores críticos de compliance e gestão"
     },
     {
       icon: BarChart3,
-      title: "Dashboards & Relatórios",
-      description: "Visualize métricas e gere relatórios automáticos"
-    },
-    {
-      icon: Shield,
-      title: "Multi-Tenant Seguro",
-      description: "Isolamento completo de dados entre empresas"
+      title: "Documentação Estruturada",
+      description: "Apresente defesas robustas com documentação automatizada e auditável"
     },
     {
       icon: Activity,
-      title: "Monitoramento em Tempo Real",
-      description: "Acompanhe atividades da equipe instantaneamente"
+      title: "Gestão de Pessoas Baseada em Dados",
+      description: "Programas de qualidade fundamentados em métricas e entregas concretas"
+    },
+    {
+      icon: MapPin,
+      title: "Monitoramento de Equipes Remotas",
+      description: "Acompanhe produtividade e engajamento em ambientes híbridos"
+    },
+    {
+      icon: Link2,
+      title: "Integração Total",
+      description: "Conecte RH, financeiro e jurídico em uma única plataforma"
     }
   ];
 
@@ -44,21 +44,21 @@ const Index = () => {
       <div className="container mx-auto px-4 py-20">
         <div className="text-center max-w-4xl mx-auto mb-20">
           <div className="inline-flex items-center gap-2 bg-card/50 backdrop-blur-sm rounded-full px-4 py-2 mb-6 shadow-lg">
-            <Activity className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">SaaS Multi-Tenant Platform</span>
+            <Shield className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium">Soluções Jurídicas e de Gestão</span>
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold mb-6 text-foreground">
-            Monitore e Integre
+            PARITY
             <br />
             <span className="bg-gradient-primary bg-clip-text text-transparent">
-              Tudo em um Lugar
+              O futuro do trabalho começa por aqui
             </span>
           </h1>
           
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Plataforma completa para monitorar geolocalização de logins, 
-            integrar APIs corporativas e gerenciar equipes com dashboards em tempo real.
+            Entregamos soluções integradas para RH, financeiro e jurídico. 
+            Previna passivos trabalhistas, estruture documentação robusta e fortaleça sua gestão de pessoas.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -100,18 +100,18 @@ const Index = () => {
         <div className="mt-20 text-center">
           <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-8 max-w-3xl mx-auto shadow-glow border border-primary/20">
             <h2 className="text-3xl font-bold mb-4">
-              Pronto para Começar?
+              Proteja sua empresa. Fortaleça sua gestão.
             </h2>
             <p className="text-muted-foreground mb-6">
-              Estrutura de banco de dados multi-tenant completa, com RLS, 
-              autenticação e pronta para integração com seu backend Python.
+              Ideal para empresas com mais de 50 colaboradores em regime híbrido ou remoto.
+              Gestão baseada em dados, compliance automatizado e desenvolvimento estruturado.
             </p>
             <Button 
               size="lg"
               className="bg-gradient-primary hover:opacity-90 px-8 shadow-md transition-smooth"
               onClick={() => navigate("/auth")}
             >
-              Acessar Plataforma
+              Começar Agora
             </Button>
           </div>
         </div>
