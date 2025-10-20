@@ -513,33 +513,77 @@ export type Database = {
       }
       companies: {
         Row: {
+          cnpj: string | null
           created_at: string
+          employee_count_range: string | null
           id: string
           is_active: boolean
           metadata: Json | null
           name: string
+          selected_departments: string[] | null
           slug: string
           updated_at: string
         }
         Insert: {
+          cnpj?: string | null
           created_at?: string
+          employee_count_range?: string | null
           id?: string
           is_active?: boolean
           metadata?: Json | null
           name: string
+          selected_departments?: string[] | null
           slug: string
           updated_at?: string
         }
         Update: {
+          cnpj?: string | null
           created_at?: string
+          employee_count_range?: string | null
           id?: string
           is_active?: boolean
           metadata?: Json | null
           name?: string
+          selected_departments?: string[] | null
           slug?: string
           updated_at?: string
         }
         Relationships: []
+      }
+      company_contacts: {
+        Row: {
+          company_id: string
+          contact_type: string
+          created_at: string | null
+          email: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          contact_type: string
+          created_at?: string | null
+          email: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          contact_type?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_contacts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       corrective_actions: {
         Row: {
