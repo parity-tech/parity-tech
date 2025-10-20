@@ -17,6 +17,7 @@ import {
   Users,
   Settings
 } from "lucide-react";
+import { useModuleAccess } from "@/hooks/use-module-access";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -26,6 +27,7 @@ export default function Dashboard() {
   const [company, setCompany] = useState<any>(null);
   const [userRole, setUserRole] = useState<string>("");
   const navigate = useNavigate();
+  const { hasAccess, primarySector, loading: moduleLoading } = useModuleAccess();
 
   useEffect(() => {
     const initAuth = async () => {
@@ -118,6 +120,116 @@ export default function Dashboard() {
     { icon: FileText, label: "Relatórios", value: "0", color: "text-success" },
   ];
 
+  // Module configuration with access control
+  const modules = [
+    {
+      id: "compliance",
+      title: "Compliance",
+      description: "Metas, trilhas de capacitação e feedback por setor",
+      icon: MapPin,
+      route: "/compliance",
+      moduleName: "compliance",
+      gradient: "bg-gradient-primary",
+      iconColor: "text-primary-foreground",
+      requiresAccess: true,
+    },
+    {
+      id: "geolocalization",
+      title: "Geolocalização",
+      description: "Monitore locais de login da equipe em tempo real",
+      icon: MapPin,
+      route: "/geolocalization",
+      moduleName: null, // No access control
+      gradient: "bg-primary/10",
+      iconColor: "text-primary",
+      requiresAccess: false,
+    },
+    {
+      id: "commercial",
+      title: "Área Comercial",
+      description: "CRM, VOIP e analytics para vendas",
+      icon: Link2,
+      route: "/commercial",
+      moduleName: "commercial",
+      gradient: "bg-accent/10",
+      iconColor: "text-accent",
+      requiresAccess: true,
+    },
+    {
+      id: "customer-service",
+      title: "Atendimento ao Cliente",
+      description: "ERP, VOIP e métricas de suporte",
+      icon: Link2,
+      route: "/customer-service",
+      moduleName: "customer-service",
+      gradient: "bg-accent/10",
+      iconColor: "text-accent",
+      requiresAccess: true,
+    },
+    {
+      id: "hr-integrations",
+      title: "Integrações de RH",
+      description: "Admissões, férias e gestão de benefícios",
+      icon: Users,
+      route: "/hr-integrations",
+      moduleName: "hr-integrations",
+      gradient: "bg-accent/10",
+      iconColor: "text-accent",
+      requiresAccess: true,
+    },
+    {
+      id: "analytics",
+      title: "Analytics & BI",
+      description: "Power BI, Looker e dashboards avançados",
+      icon: TrendingUp,
+      route: "/analytics",
+      moduleName: "analytics",
+      gradient: "bg-accent/10",
+      iconColor: "text-accent",
+      requiresAccess: true,
+    },
+    {
+      id: "alerts",
+      title: "Alertas",
+      description: "Score de risco trabalhista, segurança da informação e LGPD",
+      icon: AlertTriangle,
+      route: "/alerts",
+      moduleName: "alerts",
+      gradient: "bg-warning/10",
+      iconColor: "text-warning",
+      requiresAccess: true,
+    },
+    {
+      id: "people-management",
+      title: "Gestão de Pessoas",
+      description: "Licença médica, bem-estar e benefícios",
+      icon: Users,
+      route: "/people",
+      moduleName: "people-management",
+      gradient: "bg-primary/10",
+      iconColor: "text-primary",
+      requiresAccess: true,
+    },
+    {
+      id: "corrective-actions",
+      title: "Ações Corretivas",
+      description: "Documentos formais e sugestões de correção",
+      icon: FileText,
+      route: "/corrective-actions",
+      moduleName: "corrective-actions",
+      gradient: "bg-destructive/10",
+      iconColor: "text-destructive",
+      requiresAccess: true,
+    },
+  ];
+
+  // Filter modules based on access
+  const visibleModules = modules.filter((module) => {
+    if (!module.requiresAccess) return true; // Always show modules without access control
+    if (!module.moduleName) return true; // Always show if no module name
+    return hasAccess(module.moduleName);
+  });
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Header */}
@@ -182,114 +294,43 @@ export default function Dashboard() {
 
         {/* Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border/50" onClick={() => navigate("/compliance")}>
-            <CardHeader>
-              <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center mb-3 shadow-md group-hover:shadow-glow group-hover:scale-110 transition-all duration-300">
-                <MapPin className="w-7 h-7 text-primary-foreground" />
-              </div>
-              <CardTitle className="text-xl">Compliance</CardTitle>
-              <CardDescription className="text-base">
-                Metas, trilhas de capacitação e feedback por setor
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border/50">
-            <CardHeader>
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                <MapPin className="w-7 h-7 text-primary" />
-              </div>
-              <CardTitle className="text-xl">Geolocalização</CardTitle>
-              <CardDescription className="text-base">
-                Monitore locais de login da equipe em tempo real
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border/50" onClick={() => navigate("/commercial")}>
-            <CardHeader>
-              <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-3 group-hover:bg-accent/20 group-hover:scale-110 transition-all duration-300">
-                <Link2 className="w-7 h-7 text-accent" />
-              </div>
-              <CardTitle className="text-xl">Área Comercial</CardTitle>
-              <CardDescription className="text-base">
-                CRM, VOIP e analytics para vendas
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border/50" onClick={() => navigate("/customer-service")}>
-            <CardHeader>
-              <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-3 group-hover:bg-accent/20 group-hover:scale-110 transition-all duration-300">
-                <Link2 className="w-7 h-7 text-accent" />
-              </div>
-              <CardTitle className="text-xl">Atendimento ao Cliente</CardTitle>
-              <CardDescription className="text-base">
-                ERP, VOIP e métricas de suporte
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border/50" onClick={() => navigate("/hr-integrations")}>
-            <CardHeader>
-              <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-3 group-hover:bg-accent/20 group-hover:scale-110 transition-all duration-300">
-                <Users className="w-7 h-7 text-accent" />
-              </div>
-              <CardTitle className="text-xl">Integrações de RH</CardTitle>
-              <CardDescription className="text-base">
-                Admissões, férias e gestão de benefícios
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border/50" onClick={() => navigate("/analytics")}>
-            <CardHeader>
-              <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-3 group-hover:bg-accent/20 group-hover:scale-110 transition-all duration-300">
-                <TrendingUp className="w-7 h-7 text-accent" />
-              </div>
-              <CardTitle className="text-xl">Analytics & BI</CardTitle>
-              <CardDescription className="text-base">
-                Power BI, Looker e dashboards avançados
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border/50" onClick={() => navigate("/alerts")}>
-            <CardHeader>
-              <div className="w-14 h-14 rounded-xl bg-warning/10 flex items-center justify-center mb-3 group-hover:bg-warning/20 group-hover:scale-110 transition-all duration-300">
-                <AlertTriangle className="w-7 h-7 text-warning" />
-              </div>
-              <CardTitle className="text-xl">Alertas</CardTitle>
-              <CardDescription className="text-base">
-                Score de risco trabalhista, segurança da informação e LGPD
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border/50" onClick={() => navigate("/people")}>
-            <CardHeader>
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                <Users className="w-7 h-7 text-primary" />
-              </div>
-              <CardTitle className="text-xl">Gestão de Pessoas</CardTitle>
-              <CardDescription className="text-base">
-                Licença médica, bem-estar e benefícios
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border/50" onClick={() => navigate("/corrective-actions")}>
-            <CardHeader>
-              <div className="w-14 h-14 rounded-xl bg-destructive/10 flex items-center justify-center mb-3 group-hover:bg-destructive/20 group-hover:scale-110 transition-all duration-300">
-                <FileText className="w-7 h-7 text-destructive" />
-              </div>
-              <CardTitle className="text-xl">Ações Corretivas</CardTitle>
-              <CardDescription className="text-base">
-                Documentos formais e sugestões de correção
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          {visibleModules.map((module) => (
+            <Card
+              key={module.id}
+              className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border/50"
+              onClick={() => navigate(module.route)}
+            >
+              <CardHeader>
+                <div className={`w-14 h-14 rounded-xl ${module.gradient} flex items-center justify-center mb-3 ${module.id === 'compliance' ? 'shadow-md group-hover:shadow-glow' : 'group-hover:bg-opacity-30'} group-hover:scale-110 transition-all duration-300`}>
+                  <module.icon className={`w-7 h-7 ${module.iconColor}`} />
+                </div>
+                <CardTitle className="text-xl">{module.title}</CardTitle>
+                <CardDescription className="text-base">
+                  {module.description}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
         </div>
+
+        {/* Sector Info Badge */}
+        {primarySector && (
+          <Card className="mt-6 border-primary/20 bg-primary/5">
+            <CardContent className="py-4">
+              <div className="flex items-center gap-3">
+                <Settings className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">
+                    Setor Principal: <span className="capitalize">{primarySector}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Módulos visíveis conforme permissões do setor
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Info Box */}
         <Card className="mt-12 bg-gradient-primary text-primary-foreground shadow-glow border-0">
