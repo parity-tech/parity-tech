@@ -12,8 +12,8 @@
 ### `stable` - Produção
 - **Propósito:** Branch de produção estável
 - **Uso:** Código pronto e testado para produção
-- **Deploy:** Deploy automático para https://parity.com.br
-- **CI:** Build + Deploy no GitHub Pages
+- **Deploy:** Deploy **MANUAL** para https://parity.com.br
+- **CI:** Build + Deploy no GitHub Pages (quando você disparar)
 - **Proteção:** SEMPRE proteger esta branch
 
 ---
@@ -55,12 +55,19 @@ git pull origin stable
 # 3. Merge da main para stable
 git merge main
 
-# 4. Push para produção
+# 4. Push para GitHub
 git push origin stable
 
-# 5. GitHub Actions faz deploy automático!
-# 🚀 Site atualiza em https://parity.com.br em 2-5 minutos
+# 5. Faça o deploy MANUALMENTE no GitHub:
+#    - Vá em Actions no GitHub
+#    - Clique em "Deploy to GitHub Pages (Production)"
+#    - Clique em "Run workflow"
+#    - Selecione branch: stable
+#    - Clique em "Run workflow" (verde)
+# 🚀 Aguarde 2-5 minutos e o site atualiza!
 ```
+
+📖 **Guia completo de deploy manual:** [MANUAL_DEPLOY.md](MANUAL_DEPLOY.md)
 
 ### Alternativa: Merge via GitHub (Recomendado)
 
@@ -106,13 +113,15 @@ git push origin stable
 ### 2. Deploy to GitHub Pages (stable)
 **Arquivo:** `.github/workflows/deploy.yml`
 
-**Trigger:** Push em `stable`
+**Trigger:** **Manual** (workflow_dispatch)
 
 **O que faz:**
 1. Instala dependências
 2. Faz build de produção
 3. Deploy no GitHub Pages
 4. Site fica disponível em https://parity.com.br
+
+**Como usar:** Vá em Actions → "Deploy to GitHub Pages" → "Run workflow"
 
 **Status:** Badge verde = site online
 

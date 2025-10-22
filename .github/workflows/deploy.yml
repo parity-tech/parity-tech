@@ -1,9 +1,6 @@
 name: Deploy to GitHub Pages (Production)
 
 on:
-  push:
-    branches:
-      - stable
   workflow_dispatch:
 
 permissions:
