@@ -1,73 +1,162 @@
-# Welcome to your Lovable project
+# Parity - O futuro do trabalho começa por aqui
 
-## Project info
+Soluções jurídicas e de gestão para RH, financeiro e jurídico. Previna passivos trabalhistas, estruture documentação e fortaleça sua gestão de pessoas.
 
-**URL**: https://lovable.dev/projects/889a0ae7-393a-4396-9a7e-010c8916f40b
+## Requisitos
 
-## How can I edit this code?
+- Node.js 18+ ([instalar com nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
+- npm ou yarn
 
-There are several ways of editing your application.
+## Desenvolvimento Local
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/889a0ae7-393a-4396-9a7e-010c8916f40b) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
+1. Clone o repositório:
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
+cd parity-tech
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Instale as dependências:
+```sh
+npm install
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. Configure as variáveis de ambiente:
+```sh
+cp .env.example .env
+```
+Edite o arquivo `.env` com suas credenciais do Supabase.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+4. Inicie o servidor de desenvolvimento:
+```sh
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+O aplicativo estará disponível em `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Tecnologias
 
-**Use GitHub Codespaces**
+- **Frontend:** React 18 + TypeScript
+- **Build Tool:** Vite
+- **UI:** shadcn/ui + Tailwind CSS
+- **Backend:** Supabase (Auth, Database, Functions)
+- **Form Management:** React Hook Form + Zod
+- **State Management:** TanStack Query
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Deploy e Domínio Customizado
 
-## What technologies are used for this project?
+### Deploy no GitHub Pages (parity.com.br) ⭐
 
-This project is built with:
+Este projeto está configurado para deploy automático no GitHub Pages com o domínio customizado **parity.com.br**.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+#### Configuração Inicial (Uma vez apenas)
 
-## How can I deploy this project?
+**1. Habilite o GitHub Pages no repositório:**
+   - Acesse **Settings** → **Pages**
+   - Em **Source**, selecione **GitHub Actions**
 
-Simply open [Lovable](https://lovable.dev/projects/889a0ae7-393a-4396-9a7e-010c8916f40b) and click on Share -> Publish.
+**2. Configure as variáveis de ambiente (Secrets):**
+   - Acesse **Settings** → **Secrets and variables** → **Actions**
+   - Clique em **New repository secret** e adicione:
+     - Nome: `VITE_SUPABASE_PROJECT_ID` | Valor: seu project id
+     - Nome: `VITE_SUPABASE_URL` | Valor: sua URL do Supabase
+     - Nome: `VITE_SUPABASE_PUBLISHABLE_KEY` | Valor: sua chave pública
 
-## Can I connect a custom domain to my Lovable project?
+**3. Configure o DNS do domínio parity.com.br:**
 
-Yes, you can!
+   No seu provedor de DNS (Registro.br ou outro), adicione os seguintes registros:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+   **Opção A - Usando registros A (Recomendado):**
+   ```
+   Tipo: A
+   Nome: @
+   Valor: 185.199.108.153
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+   Tipo: A
+   Nome: @
+   Valor: 185.199.109.153
+
+   Tipo: A
+   Nome: @
+   Valor: 185.199.110.153
+
+   Tipo: A
+   Nome: @
+   Valor: 185.199.111.153
+   ```
+
+   **Opção B - Usando CNAME (alternativa):**
+   ```
+   Tipo: CNAME
+   Nome: www
+   Valor: <seu-usuario-github>.github.io
+   ```
+
+**4. Deploy automático:**
+   - Cada push na branch `main` dispara o workflow automaticamente
+   - Acompanhe o progresso em **Actions**
+   - O site ficará disponível em https://parity.com.br em alguns minutos
+
+#### Teste Local Antes do Deploy
+
+```sh
+npm run build
+npm run preview
+```
+
+### Outras Opções de Deploy
+
+<details>
+<summary>Opção Alternativa: Deploy na Vercel</summary>
+
+1. Instale a CLI da Vercel:
+```sh
+npm i -g vercel
+```
+
+2. Faça login e deploy:
+```sh
+vercel login
+vercel
+```
+
+3. Configure as variáveis de ambiente na dashboard da Vercel
+4. Configure seu domínio customizado em **Settings** → **Domains**
+</details>
+
+<details>
+<summary>Opção Alternativa: Deploy na Netlify</summary>
+
+1. Instale a CLI da Netlify:
+```sh
+npm i -g netlify-cli
+```
+
+2. Faça login e deploy:
+```sh
+netlify login
+netlify deploy --prod
+```
+
+3. Configure as variáveis de ambiente em **Site settings** → **Environment variables**
+4. Configure domínio customizado em **Domain settings**
+</details>
+
+## Variáveis de Ambiente
+
+Variáveis necessárias para produção:
+
+```env
+VITE_SUPABASE_PROJECT_ID=seu_project_id
+VITE_SUPABASE_URL=https://seu-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sua_publishable_key
+```
+
+**Importante:** Nunca commite o arquivo `.env` com credenciais reais. Use `.env.example` como template.
+
+## Configuração do Supabase Edge Functions
+
+Para a função de geração de ações corretivas, configure no Supabase:
+
+1. Vá em **Project Settings** → **Edge Functions**
+2. Adicione a variável de ambiente:
+   - `OPENAI_API_KEY`: Sua chave da API OpenAI

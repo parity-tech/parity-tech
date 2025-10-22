@@ -51,9 +51,9 @@ serve(async (req) => {
     } = await req.json();
 
     // Gerar documento de ação corretiva usando IA
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY not configured');
     }
 
     const prompt = `${LEGAL_EXPERT_PROMPT}
@@ -78,14 +78,14 @@ Por favor, elabore um documento formal contendo:
 
 O documento deve ser profissional, claro e juridicamente embasado, adequado para ser entregue ao colaborador e arquivado no RH.`;
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: LEGAL_EXPERT_PROMPT },
           { role: 'user', content: prompt }
@@ -102,11 +102,11 @@ O documento deve ser profissional, claro e juridicamente embasado, adequado para
       }
       if (aiResponse.status === 402) {
         return new Response(
-          JSON.stringify({ error: 'Pagamento necessário, adicione créditos ao seu workspace Lovable AI.' }),
+          JSON.stringify({ error: 'Pagamento necessário, adicione créditos à sua conta OpenAI.' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      throw new Error('AI Gateway error');
+      throw new Error('OpenAI API error');
     }
 
     const aiData = await aiResponse.json();
@@ -115,14 +115,14 @@ O documento deve ser profissional, claro e juridicamente embasado, adequado para
     // Gerar sugestões adicionais de ações
     const suggestionsPrompt = `Com base na ocorrência descrita, liste 3-5 ações corretivas práticas e específicas que o RH e gestor devem tomar, além da entrega do documento. Liste em formato de bullet points conciso.`;
 
-    const suggestionsResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const suggestionsResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: LEGAL_EXPERT_PROMPT },
           { role: 'user', content: prompt },
