@@ -46,7 +46,13 @@ O aplicativo estará disponível em `http://localhost:8080`
 
 ### Deploy no GitHub Pages (parity.com.br) ⭐
 
-Este projeto está configurado para deploy automático no GitHub Pages com o domínio customizado **parity.com.br**.
+Este projeto usa deploy automático no GitHub Pages com o domínio customizado **parity.com.br**.
+
+**Estratégia de Branches:**
+- `main` - Branch de desenvolvimento (CI/validação)
+- `stable` - Branch de produção (deploy automático)
+
+📖 **Leia:** [BRANCHING_STRATEGY.md](BRANCHING_STRATEGY.md) para entender o fluxo de trabalho
 
 #### Configuração Inicial (Uma vez apenas)
 
@@ -92,7 +98,8 @@ Este projeto está configurado para deploy automático no GitHub Pages com o dom
    ```
 
 **4. Deploy automático:**
-   - Cada push na branch `main` dispara o workflow automaticamente
+   - Cada push na branch `stable` dispara o deploy automaticamente
+   - Branch `main` roda apenas CI (validação)
    - Acompanhe o progresso em **Actions**
    - O site ficará disponível em https://parity.com.br em alguns minutos
 
