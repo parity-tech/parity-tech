@@ -227,7 +227,7 @@ Após concluir todos os passos:
 ### Estratégia de Branches:
 
 - **`main`** = Desenvolvimento (não faz deploy)
-- **`stable`** = Produção (deploy automático em parity.com.br)
+- **`stable`** = Produção (deploy manual em parity.com.br)
 
 ### Fluxo de Trabalho:
 
@@ -243,10 +243,11 @@ Após concluir todos os passos:
 1. `git checkout stable`
 2. `git merge main` (ou crie PR no GitHub)
 3. `git push origin stable`
-4. GitHub Actions faz deploy automaticamente
-5. Site atualiza em 2-5 minutos
+4. **No GitHub:** Actions → "Deploy to GitHub Pages" → "Run workflow"
+5. Selecione branch `stable` → Clique em "Run workflow"
+6. Site atualiza em 2-5 minutos
 
-📖 **Guia completo:** [BRANCHING_STRATEGY.md](BRANCHING_STRATEGY.md)
+📖 **Guia completo:** [MANUAL_DEPLOY.md](MANUAL_DEPLOY.md)
 
 ---
 

@@ -50,7 +50,7 @@ Este projeto usa deploy automático no GitHub Pages com o domínio customizado *
 
 **Estratégia de Branches:**
 - `main` - Branch de desenvolvimento (CI/validação)
-- `stable` - Branch de produção (deploy automático)
+- `stable` - Branch de produção (deploy manual)
 
 📖 **Leia:** [BRANCHING_STRATEGY.md](BRANCHING_STRATEGY.md) para entender o fluxo de trabalho
 
@@ -97,11 +97,12 @@ Este projeto usa deploy automático no GitHub Pages com o domínio customizado *
    Valor: <seu-usuario-github>.github.io
    ```
 
-**4. Deploy automático:**
-   - Cada push na branch `stable` dispara o deploy automaticamente
-   - Branch `main` roda apenas CI (validação)
-   - Acompanhe o progresso em **Actions**
-   - O site ficará disponível em https://parity.com.br em alguns minutos
+**4. Deploy manual:**
+   - Deploy é feito manualmente via GitHub Actions
+   - Vá em **Actions** → **"Deploy to GitHub Pages"** → **"Run workflow"**
+   - Selecione a branch `stable` e clique em **"Run workflow"**
+   - O site será atualizado em https://parity.com.br em 2-5 minutos
+   - 📖 Guia completo: [MANUAL_DEPLOY.md](MANUAL_DEPLOY.md)
 
 #### Teste Local Antes do Deploy
 
