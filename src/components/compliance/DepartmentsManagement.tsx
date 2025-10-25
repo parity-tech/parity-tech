@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2 } from "lucide-react";
-import { toast } from "sonner";
+import { Building2, Search, Plus, MoreVertical } from "lucide-react";
 
 interface DepartmentsManagementProps {
   userRole: string;
@@ -11,7 +8,54 @@ interface DepartmentsManagementProps {
 
 export default function DepartmentsManagement({ userRole }: DepartmentsManagementProps) {
   const [departments, setDepartments] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const canManage = userRole === 'admin';
+
+  // Dados mockup
+  const mockDepartments = [
+    {
+      id: '1',
+      name: 'Vendas',
+      description: 'Equipe responsável por prospecção, negociação e fechamento de vendas',
+      is_active: true
+    },
+    {
+      id: '2',
+      name: 'Tecnologia',
+      description: 'Desenvolvimento de software, infraestrutura e suporte técnico',
+      is_active: true
+    },
+    {
+      id: '3',
+      name: 'Suporte',
+      description: 'Atendimento ao cliente e resolução de tickets',
+      is_active: true
+    },
+    {
+      id: '4',
+      name: 'Recursos Humanos',
+      description: 'Gestão de pessoas, recrutamento e desenvolvimento de talentos',
+      is_active: true
+    },
+    {
+      id: '5',
+      name: 'Financeiro',
+      description: 'Controladoria, contas a pagar/receber e planejamento financeiro',
+      is_active: true
+    },
+    {
+      id: '6',
+      name: 'Marketing',
+      description: 'Estratégias de marketing digital, branding e comunicação',
+      is_active: true
+    },
+    {
+      id: '7',
+      name: 'Jurídico',
+      description: 'Compliance, contratos e assessoria jurídica',
+      is_active: false
+    }
+  ];
 
   useEffect(() => {
     loadDepartments();
@@ -23,82 +67,97 @@ export default function DepartmentsManagement({ userRole }: DepartmentsManagemen
       .select('*')
       .order('name');
 
-    if (!error && data) {
+    if (!error && data && data.length > 0) {
       setDepartments(data);
-    } else if (error) {
-      console.error('Error loading departments:', error);
+    } else {
+      // Usar dados mockup se não houver dados no banco
+      setDepartments(mockDepartments);
     }
   };
 
-  const buildHierarchy = (departments: any[]) => {
-    const map = new Map();
-    const roots: any[] = [];
-
-    departments.forEach(dept => map.set(dept.id, { ...dept, children: [] }));
-    
-    departments.forEach(dept => {
-      const node = map.get(dept.id);
-      if (dept.parent_id) {
-        const parent = map.get(dept.parent_id);
-        if (parent) parent.children.push(node);
-      } else {
-        roots.push(node);
-      }
-    });
-
-    return roots;
-  };
-
-  const renderDepartment = (dept: any, level: number = 0) => (
-    <div key={dept.id} style={{ marginLeft: `${level * 2}rem` }} className="mb-2">
-      <Card className="hover:shadow-md transition-smooth">
-        <CardHeader className="py-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-primary" />
-            </div>
-            <div>
-              <CardTitle className="text-sm">{dept.name}</CardTitle>
-              {dept.description && (
-                <CardDescription className="text-xs">{dept.description}</CardDescription>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-      {dept.children && dept.children.length > 0 && (
-        <div className="mt-2">
-          {dept.children.map((child: any) => renderDepartment(child, level + 1))}
-        </div>
-      )}
-    </div>
+  const filteredDepartments = departments.filter(dept =>
+    dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    dept.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const hierarchy = buildHierarchy(departments);
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-2xl font-bold">Setores e Departamentos</h3>
-          <p className="text-muted-foreground">Estrutura organizacional da empresa</p>
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Gerenciamento de Setores</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Estrutura organizacional e departamentos</p>
+        </div>
+        {canManage && (
+          <button className="flex items-center space-x-2 bg-purple-600 text-white font-medium py-2.5 px-4 rounded-md hover:bg-purple-700 transition-colors">
+            <Plus className="w-4 h-4" />
+            <span>Novo Setor</span>
+          </button>
+        )}
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="relative flex-grow">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 w-5 h-5" />
+          <input
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-purple-600 focus:border-purple-600 text-slate-900 dark:text-slate-50"
+            placeholder="Pesquisar por nome ou descrição..."
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
 
-      {hierarchy.length > 0 ? (
-        <div className="space-y-4">
-          {hierarchy.map(dept => renderDepartment(dept))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhum setor cadastrado</h3>
-            <p className="text-muted-foreground">
-              A estrutura de setores será configurada pelo administrador.
+      <div className="space-y-4">
+        {filteredDepartments.length > 0 ? (
+          filteredDepartments.map((dept) => (
+            <div
+              key={dept.id}
+              className="border border-slate-200 dark:border-slate-700 rounded-lg p-4 space-y-4"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="font-semibold text-lg text-slate-900 dark:text-slate-50">{dept.name}</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{dept.description || "Sem descrição"}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                    dept.is_active
+                      ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                      : "bg-slate-500/10 text-slate-500 border border-slate-500/20"
+                  }`}>
+                    {dept.is_active ? "Ativo" : "Inativo"}
+                  </span>
+                  {canManage && (
+                    <button className="p-1 text-slate-500 dark:text-slate-400 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700">
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <Building2 className="w-12 h-12 text-slate-400 dark:text-slate-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-slate-50">
+              {searchTerm ? "Nenhum setor encontrado" : "Nenhum setor cadastrado"}
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400">
+              {searchTerm
+                ? "Tente ajustar sua pesquisa"
+                : "A estrutura de setores será configurada pelo administrador."}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        )}
+      </div>
+
+      {filteredDepartments.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 sm:mb-0">
+            Mostrando {filteredDepartments.length} de {departments.length} resultados
+          </p>
+        </div>
       )}
     </div>
   );

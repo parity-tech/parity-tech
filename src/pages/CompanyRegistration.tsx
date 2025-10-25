@@ -140,7 +140,7 @@ export default function CompanyRegistration() {
         description: `${data.name} foi registrada no sistema.`,
       });
 
-      navigate("/dashboard");
+      navigate("/homepage");
     } catch (error: any) {
       toast({
         variant: "destructive",
