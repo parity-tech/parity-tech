@@ -13,9 +13,10 @@ import { Plus, Pencil, Trash2, Target } from "lucide-react";
 
 interface GoalsManagementProps {
   userRole: string;
+  selectedDepartmentId: string | null;
 }
 
-export default function GoalsManagement({ userRole }: GoalsManagementProps) {
+export default function GoalsManagement({ userRole, selectedDepartmentId }: GoalsManagementProps) {
   const [goals, setGoals] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -33,6 +34,57 @@ export default function GoalsManagement({ userRole }: GoalsManagementProps) {
 
   const canManage = userRole === 'admin' || userRole === 'gestor';
 
+  // Dados mockup
+  const mockGoals = [
+    {
+      id: '1',
+      name: 'Implementar Novo Sistema de CRM',
+      description: 'Adoção e configuração do novo sistema para o time de vendas',
+      metric_type: 'tasks_completed',
+      target_value: 100,
+      period: 'monthly',
+      department_id: '1',
+      start_date: '2024-07-01',
+      end_date: '2024-07-15',
+      is_active: true,
+      departments: { name: 'Vendas' }
+    },
+    {
+      id: '2',
+      name: 'Treinamento de Segurança de Dados',
+      description: 'Capacitar 90% da equipe nas novas políticas de segurança da informação',
+      metric_type: 'meetings_attended',
+      target_value: 50,
+      period: 'quarterly',
+      department_id: '2',
+      start_date: '2024-06-01',
+      end_date: '2024-08-30',
+      is_active: true,
+      departments: { name: 'Tecnologia' }
+    },
+    {
+      id: '3',
+      name: 'Reduzir Tempo de Resposta ao Cliente',
+      description: 'Diminuir o tempo médio de primeira resposta para menos de 1 hora',
+      metric_type: 'tickets_resolved',
+      target_value: 200,
+      period: 'monthly',
+      department_id: '3',
+      start_date: '2024-07-01',
+      end_date: '2024-08-01',
+      is_active: true,
+      departments: { name: 'Suporte' }
+    }
+  ];
+
+  const mockDepartments = [
+    { id: '1', name: 'Vendas', is_active: true },
+    { id: '2', name: 'Tecnologia', is_active: true },
+    { id: '3', name: 'Suporte', is_active: true },
+    { id: '4', name: 'RH', is_active: true },
+    { id: '5', name: 'Financeiro', is_active: true }
+  ];
+
   useEffect(() => {
     loadGoals();
     loadDepartments();
@@ -47,8 +99,11 @@ export default function GoalsManagement({ userRole }: GoalsManagementProps) {
       `)
       .order('created_at', { ascending: false });
 
-    if (!error && data) {
+    if (!error && data && data.length > 0) {
       setGoals(data);
+    } else {
+      // Usar dados mockup se não houver dados no banco
+      setGoals(mockGoals);
     }
   };
 
@@ -59,8 +114,11 @@ export default function GoalsManagement({ userRole }: GoalsManagementProps) {
       .eq('is_active', true)
       .order('name');
 
-    if (!error && data) {
+    if (!error && data && data.length > 0) {
       setDepartments(data);
+    } else {
+      // Usar dados mockup se não houver dados no banco
+      setDepartments(mockDepartments);
     }
   };
 
@@ -323,7 +381,9 @@ export default function GoalsManagement({ userRole }: GoalsManagementProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {goals.map((goal) => (
+        {goals
+          .filter((goal) => !selectedDepartmentId || goal.department_id === selectedDepartmentId)
+          .map((goal) => (
           <Card key={goal.id} className="hover:shadow-lg transition-smooth">
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -392,13 +452,17 @@ export default function GoalsManagement({ userRole }: GoalsManagementProps) {
         ))}
       </div>
 
-      {goals.length === 0 && (
+      {goals.filter((goal) => !selectedDepartmentId || goal.department_id === selectedDepartmentId).length === 0 && (
         <Card>
           <CardContent className="py-12 text-center">
             <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhuma meta cadastrada</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              {selectedDepartmentId ? "Nenhuma meta encontrada para este setor" : "Nenhuma meta cadastrada"}
+            </h3>
             <p className="text-muted-foreground mb-4">
-              {canManage
+              {selectedDepartmentId
+                ? "Tente selecionar outro setor ou limpar o filtro."
+                : canManage
                 ? "Crie sua primeira meta para começar a monitorar o desempenho."
                 : "Aguarde que os gestores configurem as metas."}
             </p>

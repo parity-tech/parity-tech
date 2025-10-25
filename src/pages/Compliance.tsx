@@ -1,36 +1,73 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Session } from "@supabase/supabase-js";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import type { User, Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { 
-  LogOut, 
-  Activity, 
+import {
+  LogOut,
   Target,
   Building2,
   BookOpen,
   MessageSquare,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle
+  CheckCircle2,
+  Clock,
+  Settings,
+  BarChart3,
+  UserCircle2,
+  Calendar,
+  MoreVertical,
+  Search,
+  Plus
 } from "lucide-react";
 import GoalsManagement from "@/components/compliance/GoalsManagement";
 import DepartmentsManagement from "@/components/compliance/DepartmentsManagement";
 import LearningPaths from "@/components/compliance/LearningPaths";
 import FeedbackThreads from "@/components/compliance/FeedbackThreads";
 
+interface Profile {
+  id: string;
+  full_name: string | null;
+  company_id: string | null;
+  [key: string]: any;
+}
+
+interface Company {
+  id: string;
+  name: string;
+  [key: string]: any;
+}
+
+interface Department {
+  id: string;
+  name: string;
+}
+
+interface PerformanceStats {
+  totalGoals: number;
+  completedGoals: number;
+  averagePerformance: number;
+  activeLearningPaths: number;
+  pendingFeedbacks: number;
+}
+
 export default function Compliance() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [company, setCompany] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [company, setCompany] = useState<Company | null>(null);
   const [userRole, setUserRole] = useState<string>("");
   const [achievements, setAchievements] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<"departments" | "goals" | "learning" | "feedback">("departments");
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string | null>(null);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [performanceStats, setPerformanceStats] = useState<PerformanceStats>({
+    totalGoals: 0,
+    completedGoals: 0,
+    averagePerformance: 0,
+    activeLearningPaths: 0,
+    pendingFeedbacks: 0,
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -65,7 +102,9 @@ export default function Compliance() {
   useEffect(() => {
     if (user) {
       loadAchievements();
-      
+      loadPerformanceStats();
+      loadDepartments();
+
       // Realtime para achievements
       const channel = supabase
         .channel('goal-achievements-changes')
@@ -76,7 +115,10 @@ export default function Compliance() {
             schema: 'public',
             table: 'goal_achievements'
           },
-          () => loadAchievements()
+          () => {
+            loadAchievements();
+            loadPerformanceStats();
+          }
         )
         .subscribe();
 
@@ -86,17 +128,51 @@ export default function Compliance() {
     }
   }, [user]);
 
+  const loadDepartments = async () => {
+    const { data, error } = await supabase
+      .from('departments')
+      .select('id, name')
+      .eq('is_active', true)
+      .order('name');
+
+    if (!error && data && data.length > 0) {
+      setDepartments(data);
+    } else {
+      // Dados mockup
+      setDepartments([
+        { id: '1', name: 'Vendas' },
+        { id: '2', name: 'Tecnologia' },
+        { id: '3', name: 'Suporte' },
+        { id: '4', name: 'Recursos Humanos' },
+        { id: '5', name: 'Financeiro' },
+        { id: '6', name: 'Marketing' }
+      ]);
+    }
+  };
+
   const loadUserData = async (userId: string) => {
     try {
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("*, companies(*), departments(*)")
+        .select("*")
         .eq("id", userId)
         .single();
 
       if (profileData) {
         setProfile(profileData);
-        setCompany(profileData.companies);
+
+        // Buscar empresa separadamente
+        if (profileData.company_id) {
+          const { data: companyData } = await supabase
+            .from("companies")
+            .select("*")
+            .eq("id", profileData.company_id)
+            .single();
+
+          if (companyData) {
+            setCompany(companyData);
+          }
+        }
       }
 
       const { data: roleData } = await supabase
@@ -131,6 +207,59 @@ export default function Compliance() {
     }
   };
 
+  const loadPerformanceStats = async () => {
+    if (!user) return;
+
+    try {
+      // Total de metas
+      const { count: totalGoalsCount } = await supabase
+        .from('goal_achievements')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      // Metas completadas
+      const { count: completedGoalsCount } = await supabase
+        .from('goal_achievements')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_achieved', true);
+
+      // Performance média
+      const { data: achievementsData } = await supabase
+        .from('goal_achievements')
+        .select('achievement_percentage')
+        .eq('user_id', user.id);
+
+      const avgPerformance = achievementsData && achievementsData.length > 0
+        ? achievementsData.reduce((sum, item) => sum + item.achievement_percentage, 0) / achievementsData.length
+        : 0;
+
+      // Trilhas ativas
+      const { count: activePathsCount } = await supabase
+        .from('learning_path_enrollments')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .neq('completion_status', 'completed');
+
+      // Feedbacks pendentes
+      const { count: pendingFeedbacksCount } = await supabase
+        .from('feedback_threads')
+        .select('*', { count: 'exact', head: true })
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .eq('status', 'pending');
+
+      setPerformanceStats({
+        totalGoals: totalGoalsCount || 0,
+        completedGoals: completedGoalsCount || 0,
+        averagePerformance: Math.round(avgPerformance),
+        activeLearningPaths: activePathsCount || 0,
+        pendingFeedbacks: pendingFeedbacksCount || 0,
+      });
+    } catch (error) {
+      console.error("Erro ao carregar estatísticas:", error);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast.success("Logout realizado com sucesso!");
@@ -139,160 +268,191 @@ export default function Compliance() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center">
-          <Activity className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Carregando...</p>
+          <Target className="w-12 h-12 animate-pulse text-purple-600 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-400">Carregando...</p>
         </div>
       </div>
     );
   }
 
-  const getRoleBadge = (role: string) => {
-    const variants: Record<string, any> = {
-      admin: { variant: "default", className: "bg-gradient-primary" },
-      gestor: { variant: "secondary" },
-      usuario: { variant: "outline" },
-    };
-    return variants[role] || variants.usuario;
-  };
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
-      <header className="border-b bg-card sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
-              <Target className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">Compliance & Monitoramento</h1>
-              <p className="text-sm text-muted-foreground">{company?.name || "Carregando..."}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium">{profile?.full_name || user?.email}</p>
-              <div className="flex items-center gap-2 justify-end mt-1">
-                <Badge {...getRoleBadge(userRole)}>
-                  {userRole || "usuário"}
-                </Badge>
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <button
+              onClick={() => navigate("/homepage")}
+              className="flex items-center space-x-4 hover:opacity-80 transition-opacity"
+            >
+              <img src="/parity-inverse.svg" alt="Parity" className="w-12 h-12" />
+              <div>
+                <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+                  {company?.name || "Parity"}
+                </h1>
               </div>
+            </button>
+            <div className="flex items-center space-x-4">
+              <span className="text-xs font-medium text-white bg-purple-600 rounded-full px-3 py-1">
+                {userRole || "admin"}
+              </span>
+              <button
+                onClick={() => navigate("/settings")}
+                className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+                title="Configurações"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+                title="Sair"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-              <Activity className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="w-4 h-4" />
-            </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Welcome & Quick Stats */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">
-            Bem-vindo ao Compliance, {profile?.full_name?.split(" ")[0] || "Usuário"}!
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            Gerencie metas, trilhas de capacitação e feedback do setor {profile?.departments?.name || ""}
-          </p>
+      <main className="flex-grow p-4 sm:p-6 lg:p-8 max-w-screen-2xl mx-auto w-full">
+        <div className="space-y-8">
+          {/* Welcome Section */}
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-50">
+              Bem-vindo ao Compliance, {profile?.full_name?.split(" ")[0] || "Nickson"}!
+            </h2>
+            <p className="mt-1 text-slate-500 dark:text-slate-400">
+              Gerencie metas, trilhas de capacitação e feedback do setor
+            </p>
+          </div>
 
-          {/* Achievements Summary */}
-          {achievements.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {achievements.slice(0, 3).map((achievement) => (
-                <Card key={achievement.id} className="hover:shadow-md transition-smooth">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm">{achievement.goals.name}</CardTitle>
-                      {achievement.achievement_percentage >= 100 ? (
-                        <TrendingUp className="w-5 h-5 text-success" />
-                      ) : achievement.achievement_percentage >= 80 ? (
-                        <TrendingUp className="w-5 h-5 text-warning" />
-                      ) : (
-                        <TrendingDown className="w-5 h-5 text-destructive" />
-                      )}
-                    </div>
-                    <CardDescription className="text-xs">
-                      {achievement.goals.period} | {achievement.period_start}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-2xl font-bold">
-                        {achievement.achievement_percentage.toFixed(1)}%
-                      </span>
-                      <Badge 
-                        variant={achievement.is_achieved ? "default" : "destructive"}
-                        className={achievement.is_achieved ? "bg-success" : ""}
-                      >
-                        {achievement.is_achieved ? "Atingida" : "Pendente"}
-                      </Badge>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full transition-all ${
-                          achievement.achievement_percentage >= 100 
-                            ? "bg-success" 
-                            : achievement.achievement_percentage >= 80 
-                            ? "bg-warning" 
-                            : "bg-destructive"
-                        }`}
-                        style={{ width: `${Math.min(achievement.achievement_percentage, 100)}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {achievement.current_value} / {achievement.target_value} {achievement.goals.metric_type}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+          {/* Resumo Geral de Desempenho */}
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center space-x-3 mb-4">
+              <UserCircle2 className="w-6 h-6 text-slate-500 dark:text-slate-400" />
+              <div>
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Resumo Geral de Desempenho</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Visão consolidada do seu progresso</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-center">
+                <Target className="w-8 h-8 text-purple-600 mx-auto" />
+                <p className="text-3xl font-bold mt-2 text-slate-900 dark:text-slate-50">{performanceStats.totalGoals || 12}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Metas Totais</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-center">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+                <p className="text-3xl font-bold mt-2 text-slate-900 dark:text-slate-50">{performanceStats.completedGoals || 8}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Metas Concluídas</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-center">
+                <BarChart3 className="w-8 h-8 text-amber-500 mx-auto" />
+                <p className="text-3xl font-bold mt-2 text-slate-900 dark:text-slate-50">{performanceStats.averagePerformance || 82}%</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Performance Média</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-center">
+                <BookOpen className="w-8 h-8 text-blue-500 mx-auto" />
+                <p className="text-3xl font-bold mt-2 text-slate-900 dark:text-slate-50">{performanceStats.activeLearningPaths || 5}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Trilhas Ativas</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-center">
+                <Clock className="w-8 h-8 text-red-500 mx-auto" />
+                <p className="text-3xl font-bold mt-2 text-slate-900 dark:text-slate-50">{performanceStats.pendingFeedbacks || 3}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Feedbacks Pendentes</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs Navigation */}
+          <div className="bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg flex space-x-1">
+            <button
+              onClick={() => setActiveTab("departments")}
+              className={`flex-1 text-sm font-medium py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors ${
+                activeTab === "departments"
+                  ? "bg-white dark:bg-slate-800 text-purple-600 shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700/50"
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Setores</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("goals")}
+              className={`flex-1 text-sm font-medium py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors ${
+                activeTab === "goals"
+                  ? "bg-white dark:bg-slate-800 text-purple-600 shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700/50"
+              }`}
+            >
+              <Target className="w-4 h-4" />
+              <span>Metas</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("learning")}
+              className={`flex-1 text-sm font-medium py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors ${
+                activeTab === "learning"
+                  ? "bg-white dark:bg-slate-800 text-purple-600 shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700/50"
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>Capacitação</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("feedback")}
+              className={`flex-1 text-sm font-medium py-2 px-4 rounded-md flex items-center justify-center space-x-2 transition-colors ${
+                activeTab === "feedback"
+                  ? "bg-white dark:bg-slate-800 text-purple-600 shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700/50"
+              }`}
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>Feedback</span>
+            </button>
+          </div>
+
+          {/* Seletor de Setor (aparece apenas nas tabs Metas, Capacitação e Feedback) */}
+          {activeTab !== "departments" && (
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium text-slate-900 dark:text-slate-50">
+                  Filtrar por Setor:
+                </label>
+                <select
+                  value={selectedDepartmentId || ""}
+                  onChange={(e) => setSelectedDepartmentId(e.target.value || null)}
+                  className="flex-1 max-w-xs px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-purple-600 focus:border-purple-600 text-slate-900 dark:text-slate-50"
+                >
+                  <option value="">Todos os Setores</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+                {selectedDepartmentId && (
+                  <button
+                    onClick={() => setSelectedDepartmentId(null)}
+                    className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                  >
+                    Limpar filtro
+                  </button>
+                )}
+              </div>
             </div>
           )}
+
+          {/* Tab Content */}
+          {activeTab === "departments" && <DepartmentsManagement userRole={userRole} />}
+          {activeTab === "goals" && <GoalsManagement userRole={userRole} selectedDepartmentId={selectedDepartmentId} />}
+          {activeTab === "learning" && <LearningPaths userRole={userRole} selectedDepartmentId={selectedDepartmentId} />}
+          {activeTab === "feedback" && <FeedbackThreads userRole={userRole} profile={profile} selectedDepartmentId={selectedDepartmentId} />}
         </div>
-
-        {/* Tabs */}
-        <Tabs defaultValue="goals" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="goals" className="flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              Metas
-            </TabsTrigger>
-            <TabsTrigger value="departments" className="flex items-center gap-2">
-              <Building2 className="w-4 h-4" />
-              Setores
-            </TabsTrigger>
-            <TabsTrigger value="learning" className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              Capacitação
-            </TabsTrigger>
-            <TabsTrigger value="feedback" className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Feedback
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="goals" className="mt-6">
-            <GoalsManagement userRole={userRole} />
-          </TabsContent>
-
-          <TabsContent value="departments" className="mt-6">
-            <DepartmentsManagement userRole={userRole} />
-          </TabsContent>
-
-          <TabsContent value="learning" className="mt-6">
-            <LearningPaths userRole={userRole} />
-          </TabsContent>
-
-          <TabsContent value="feedback" className="mt-6">
-            <FeedbackThreads userRole={userRole} profile={profile} />
-          </TabsContent>
-        </Tabs>
       </main>
     </div>
   );

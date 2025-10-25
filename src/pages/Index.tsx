@@ -125,21 +125,13 @@ const Index = () => {
             Previna passivos trabalhistas, estruture documentação robusta e fortaleça sua gestão de pessoas.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-scale-in [animation-delay:600ms] px-4">
-            <Button 
-              size="lg" 
+          <div className="flex justify-center items-center animate-scale-in [animation-delay:600ms] px-4">
+            <Button
+              size="lg"
               className="w-full sm:w-auto bg-white text-primary hover:bg-white/90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 shadow-xl transition-all duration-300 hover:scale-105 font-medium"
               onClick={() => navigate("/auth")}
             >
               Começar Agora
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 backdrop-blur-md bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/40 hover:scale-105 transition-all duration-300 font-light"
-              onClick={() => navigate("/auth")}
-            >
-              Ver Demo
             </Button>
           </div>
         </div>

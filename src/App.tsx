@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+import Homepage from "./pages/Homepage";
 import Compliance from "./pages/Compliance";
 import Alerts from "./pages/Alerts";
 import PeopleManagement from "./pages/PeopleManagement";
@@ -15,6 +15,8 @@ import HRIntegrations from "./pages/HRIntegrations";
 import Analytics from "./pages/Analytics";
 import CorrectiveActions from "./pages/CorrectiveActions";
 import CompanyRegistration from "./pages/CompanyRegistration";
+import CompanySetup from "./pages/CompanySetup";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,7 +30,10 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/setup" element={<CompanySetup />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/homepage" element={<Homepage />} />
+          <Route path="/dashboard" element={<Homepage />} /> {/* Redirect antigo */}
           <Route path="/compliance" element={<Compliance />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/people" element={<PeopleManagement />} />

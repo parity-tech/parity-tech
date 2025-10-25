@@ -1,27 +1,75 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, MessageSquare } from "lucide-react";
+import { Plus, MessageSquare, Search, MoreVertical, Calendar } from "lucide-react";
 
 interface FeedbackThreadsProps {
   userRole: string;
   profile: any;
+  selectedDepartmentId: string | null;
 }
 
-export default function FeedbackThreads({ userRole, profile }: FeedbackThreadsProps) {
+export default function FeedbackThreads({ userRole, profile, selectedDepartmentId }: FeedbackThreadsProps) {
   const [threads, setThreads] = useState<any[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: ""
-  });
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Dados mockup
+  const mockThreads = [
+    {
+      id: '1',
+      title: 'Sugestão: Implementar sistema de feedback 360º',
+      description: 'Seria interessante ter um sistema onde os colaboradores possam avaliar seus pares e superiores de forma estruturada, promovendo desenvolvimento contínuo.',
+      status: 'em_analise',
+      created_at: '2024-07-10T10:30:00',
+      department_id: '4',
+      departments: { name: 'RH' }
+    },
+    {
+      id: '2',
+      title: 'Melhoria: Adicionar filtros avançados no dashboard',
+      description: 'Os dashboards atuais poderiam ter filtros por período, setor e tipo de métrica para facilitar a análise de dados.',
+      status: 'implementado',
+      created_at: '2024-07-05T14:20:00',
+      department_id: '2',
+      departments: { name: 'Tecnologia' }
+    },
+    {
+      id: '3',
+      title: 'Problema: Processo de onboarding muito longo',
+      description: 'O processo de integração de novos colaboradores está demorando mais de 2 semanas. Precisamos otimizar as etapas e criar materiais mais objetivos.',
+      status: 'aberto',
+      created_at: '2024-07-15T09:15:00',
+      department_id: '4',
+      departments: { name: 'RH' }
+    },
+    {
+      id: '4',
+      title: 'Sugestão: Integração com ferramentas de CRM',
+      description: 'Integrar o sistema com HubSpot e Salesforce para automatizar o fluxo de leads e melhorar o acompanhamento de vendas.',
+      status: 'em_analise',
+      created_at: '2024-07-12T16:45:00',
+      department_id: '1',
+      departments: { name: 'Vendas' }
+    },
+    {
+      id: '5',
+      title: 'Melhoria: Padronizar templates de resposta no suporte',
+      description: 'Criar templates padronizados para respostas frequentes no atendimento ao cliente, reduzindo o tempo de resposta.',
+      status: 'implementado',
+      created_at: '2024-06-28T11:00:00',
+      department_id: '3',
+      departments: { name: 'Suporte' }
+    },
+    {
+      id: '6',
+      title: 'Ideia: Programa de mentoria interno',
+      description: 'Implementar um programa de mentoria onde colaboradores seniores possam orientar os mais juniores em suas carreiras.',
+      status: 'rejeitado',
+      created_at: '2024-06-20T13:30:00',
+      department_id: '4',
+      departments: { name: 'RH' }
+    }
+  ];
 
   useEffect(() => {
     loadThreads();
@@ -53,142 +101,123 @@ export default function FeedbackThreads({ userRole, profile }: FeedbackThreadsPr
       `)
       .order('created_at', { ascending: false });
 
-    if (!error && data) {
+    if (!error && data && data.length > 0) {
       setThreads(data);
-    }
-  };
-
-  const handleCreate = async () => {
-    if (!formData.title || !formData.description) {
-      toast.error("Preencha todos os campos");
-      return;
-    }
-
-    const feedbackData: any = {
-      title: formData.title,
-      description: formData.description,
-      department_id: profile?.department_id
-    };
-
-    const { error } = await supabase
-      .from('feedback_threads')
-      .insert(feedbackData);
-
-    if (error) {
-      toast.error("Erro ao criar feedback");
-      console.error(error);
     } else {
-      toast.success("Feedback criado com sucesso!");
-      setIsDialogOpen(false);
-      setFormData({ title: "", description: "" });
-      loadThreads();
+      // Usar dados mockup se não houver dados no banco
+      setThreads(mockThreads);
     }
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, any> = {
-      aberto: { variant: "secondary", label: "Aberto" },
-      em_analise: { variant: "default", label: "Em Análise" },
-      implementado: { variant: "default", label: "Implementado", className: "bg-success" },
-      rejeitado: { variant: "destructive", label: "Rejeitado" }
+    const statusMap: Record<string, { color: string; label: string }> = {
+      aberto: { color: "bg-slate-500/10 text-slate-600 border-slate-500/20", label: "Aberto" },
+      em_analise: { color: "bg-amber-500/10 text-amber-600 border-amber-500/20", label: "Em Análise" },
+      implementado: { color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20", label: "Implementado" },
+      rejeitado: { color: "bg-red-500/10 text-red-500 border-red-500/20", label: "Rejeitado" }
     };
-    return variants[status] || variants.aberto;
+    return statusMap[status] || statusMap.aberto;
   };
 
+  const filteredThreads = threads
+    .filter(thread =>
+      thread.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      thread.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter(thread =>
+      !selectedDepartmentId || thread.department_id === selectedDepartmentId
+    );
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-2xl font-bold">Feedback e Sugestões</h3>
-          <p className="text-muted-foreground">Compartilhe ideias e melhorias com a equipe</p>
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Feedback e Sugestões</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Compartilhe ideias e melhorias com a equipe</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Feedback
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Novo Feedback</DialogTitle>
-              <DialogDescription>
-                Compartilhe sua sugestão ou comentário
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="title">Título</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Título do feedback..."
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="description">Descrição</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Descreva sua sugestão..."
-                  rows={5}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleCreate}>Enviar</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <button className="flex items-center space-x-2 bg-purple-600 text-white font-medium py-2.5 px-4 rounded-md hover:bg-purple-700 transition-colors">
+          <Plus className="w-4 h-4" />
+          <span>Novo Feedback</span>
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        {threads.map((thread) => {
-          const statusBadge = getStatusBadge(thread.status);
-          
-          return (
-            <Card key={thread.id} className="hover:shadow-md transition-smooth">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                      <MessageSquare className="w-5 h-5 text-foreground" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{thread.title}</CardTitle>
-                      <CardDescription className="text-xs mt-1">
-                        {thread.departments?.name || "Geral"} • {new Date(thread.created_at).toLocaleDateString('pt-BR')}
-                      </CardDescription>
-                    </div>
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="relative flex-grow">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 w-5 h-5" />
+          <input
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-purple-600 focus:border-purple-600 text-slate-900 dark:text-slate-50"
+            placeholder="Pesquisar por título ou descrição..."
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {filteredThreads.length > 0 ? (
+          filteredThreads.map((thread) => {
+            const statusBadge = getStatusBadge(thread.status);
+
+            return (
+              <div
+                key={thread.id}
+                className="border border-slate-200 dark:border-slate-700 rounded-lg p-4 space-y-4"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-semibold text-lg text-slate-900 dark:text-slate-50">{thread.title}</h4>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{thread.description}</p>
                   </div>
-                  <Badge {...statusBadge}>
-                    {statusBadge.label}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full border ${statusBadge.color}`}>
+                      {statusBadge.label}
+                    </span>
+                    <button className="p-1 text-slate-500 dark:text-slate-400 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700">
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{thread.description}</p>
-              </CardContent>
-            </Card>
-          );
-        })}
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Setor: {thread.departments?.name || "Geral"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                    <Calendar className="w-4 h-4" />
+                    <span>Data: {new Date(thread.created_at).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="text-center py-12">
+            <MessageSquare className="w-12 h-12 text-slate-400 dark:text-slate-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-slate-50">
+              {selectedDepartmentId
+                ? "Nenhum feedback encontrado para este setor"
+                : searchTerm
+                ? "Nenhum feedback encontrado"
+                : "Nenhum feedback ainda"}
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400">
+              {selectedDepartmentId
+                ? "Tente selecionar outro setor ou limpar o filtro."
+                : searchTerm
+                ? "Tente ajustar sua pesquisa"
+                : "Seja o primeiro a compartilhar uma sugestão!"}
+            </p>
+          </div>
+        )}
       </div>
 
-      {threads.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhum feedback ainda</h3>
-            <p className="text-muted-foreground">
-              Seja o primeiro a compartilhar uma sugestão!
-            </p>
-          </CardContent>
-        </Card>
+      {filteredThreads.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 sm:mb-0">
+            Mostrando {filteredThreads.length} de {threads.length} resultados
+          </p>
+        </div>
       )}
     </div>
   );
