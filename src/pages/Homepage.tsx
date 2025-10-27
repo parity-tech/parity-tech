@@ -17,12 +17,23 @@ import {
 } from "lucide-react";
 import { useModuleAccess } from "@/hooks/use-module-access";
 
+interface Profile {
+  id: string;
+  full_name: string | null;
+  company_id: string | null;
+}
+
+interface Company {
+  id: string;
+  name: string;
+}
+
 export default function Homepage() {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [company, setCompany] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [company, setCompany] = useState<Company | null>(null);
   const [userRole, setUserRole] = useState<string>("");
   const navigate = useNavigate();
   const { hasAccess, primarySector, loading: moduleLoading } = useModuleAccess();
@@ -238,10 +249,17 @@ export default function Homepage() {
         <div className="mx-auto max-w-[1400px] px-10 sm:px-12 lg:px-16">
           <div className="flex h-20 items-center justify-between">
             <div className="flex items-center space-x-4">
-              <img src="/parity-inverse.svg" alt="Parity" className="w-12 h-12" />
+            <button
+              onClick={() => navigate("/homepage")}
+              className="flex items-center space-x-4 hover:opacity-80 transition-opacity"
+            >
+              <img src="/parity-logo.svg" alt="Parity" className="w-16 h-16" />
               <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">{company?.name || "Parity"}</h1>
+                <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+                  {company?.name || "Parity"}
+                </h1>
               </div>
+            </button>
             </div>
             <div className="flex items-center space-x-5">
               <span className="inline-flex items-center rounded-full bg-purple-600 px-3 py-1 text-xs font-medium text-white">

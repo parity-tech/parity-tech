@@ -3,17 +3,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { UserPlus, Calendar, Gift, Settings } from "lucide-react";
 import HRSystemIntegration from "@/components/integrations/HRSystemIntegration";
 import WebhookConfiguration from "@/components/integrations/WebhookConfiguration";
+import Navbar from "@/components/Navbar";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function HRIntegrations() {
+  const { loading, company, userRole, handleLogout } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <UserPlus className="w-12 h-12 animate-pulse text-purple-600 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-400">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <Navbar
+        companyName={company?.name || "Parity"}
+        userRole={userRole || "admin"}
+        onLogout={handleLogout}
+      />
       <div className="container mx-auto p-6">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Integrações de RH</h1>
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold mb-2">Integrações de RH</h2>
           <p className="text-muted-foreground">
             Configure integrações com sistemas de gestão de pessoas, admissões, férias e benefícios
           </p>
-        </header>
+        </div>
 
         <Tabs defaultValue="systems" className="w-full">
           <TabsList className="grid w-full grid-cols-4" role="tablist">

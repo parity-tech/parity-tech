@@ -3,16 +3,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Users, TrendingUp, Activity } from "lucide-react";
 import CRMIntegrationSetup from "@/components/integrations/CRMIntegrationSetup";
 import VOIPDashboard from "@/components/integrations/VOIPDashboard";
+import Navbar from "@/components/Navbar";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Commercial() {
+  const { loading, company, userRole, handleLogout } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <Users className="w-12 h-12 animate-pulse text-purple-600 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-400">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto p-6">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Área Comercial</h1>
-        <p className="text-muted-foreground">
-          Integrações e dashboards para vendas e relacionamento com clientes
-        </p>
-      </header>
+    <div className="min-h-screen bg-background">
+      <Navbar
+        companyName={company?.name || "Parity"}
+        userRole={userRole || "admin"}
+        onLogout={handleLogout}
+      />
+      <div className="container mx-auto p-6">
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold mb-2">Área Comercial</h2>
+          <p className="text-muted-foreground">
+            Integrações e dashboards para vendas e relacionamento com clientes
+          </p>
+        </div>
 
       <Tabs defaultValue="crm" className="w-full">
         <TabsList className="grid w-full grid-cols-3" role="tablist">
@@ -54,6 +75,7 @@ export default function Commercial() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

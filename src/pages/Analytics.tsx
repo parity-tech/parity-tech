@@ -4,17 +4,39 @@ import { BarChart3, Database, TrendingUp, Settings } from "lucide-react";
 import BIIntegration from "@/components/integrations/BIIntegration";
 import AnalyticsDashboard from "@/components/analytics/AnalyticsDashboard";
 import WebhookConfiguration from "@/components/integrations/WebhookConfiguration";
+import Navbar from "@/components/Navbar";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Analytics() {
+  const { loading, company, userRole, handleLogout } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <BarChart3 className="w-12 h-12 animate-pulse text-purple-600 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-400">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <Navbar
+        companyName={company?.name || "Parity"}
+        userRole={userRole || "admin"}
+        onLogout={handleLogout}
+      />
+
+      {/* Main Content */}
       <div className="container mx-auto p-6">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Analytics & Business Intelligence</h1>
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold mb-2">Analytics & Business Intelligence</h2>
           <p className="text-muted-foreground">
             Integre com Power BI, Looker e visualize datasets importados
           </p>
-        </header>
+        </div>
 
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="grid w-full grid-cols-4" role="tablist">

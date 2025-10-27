@@ -4,16 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  FileText, 
-  Download, 
-  CheckCircle2, 
+import {
+  FileText,
+  Download,
+  CheckCircle2,
   Clock,
   AlertTriangle,
   Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Navbar from "@/components/Navbar";
+import { useAuth } from "@/hooks/use-auth";
 
 interface CorrectiveAction {
   id: string;
@@ -31,6 +33,7 @@ interface CorrectiveAction {
 }
 
 export default function CorrectiveActions() {
+  const { loading: authLoading, company, userRole, handleLogout } = useAuth();
   const [actions, setActions] = useState<CorrectiveAction[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -143,35 +146,31 @@ export default function CorrectiveActions() {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Ações Corretivas</h1>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="mb-4">
-              <CardHeader>
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-1/2 mt-2" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-20 w-full" />
-              </CardContent>
-            </Card>
-          ))}
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <FileText className="w-12 h-12 animate-pulse text-purple-600 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-400">Carregando...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Ações Corretivas</h1>
-        <p className="text-muted-foreground">
-          Documentos gerados automaticamente para gestão de riscos trabalhistas
-        </p>
-      </header>
+    <div className="min-h-screen bg-background">
+      <Navbar
+        companyName={company?.name || "Parity"}
+        userRole={userRole || "admin"}
+        onLogout={handleLogout}
+      />
+      <div className="container mx-auto p-6">
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold mb-2">Ações Corretivas</h2>
+          <p className="text-muted-foreground">
+            Documentos gerados automaticamente para gestão de riscos trabalhistas
+          </p>
+        </div>
 
       {actions.length === 0 ? (
         <Alert>
@@ -277,6 +276,7 @@ export default function CorrectiveActions() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

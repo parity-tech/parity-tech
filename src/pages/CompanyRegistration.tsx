@@ -141,11 +141,11 @@ export default function CompanyRegistration() {
       });
 
       navigate("/homepage");
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Erro ao cadastrar empresa",
-        description: error.message || "Ocorreu um erro inesperado.",
+        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado.",
       });
     } finally {
       setIsSubmitting(false);

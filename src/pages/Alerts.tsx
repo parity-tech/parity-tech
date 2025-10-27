@@ -6,17 +6,19 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  AlertTriangle, 
-  Clock, 
-  Download, 
-  DollarSign, 
+import {
+  AlertTriangle,
+  Clock,
+  Download,
+  DollarSign,
   FileText,
   CheckCircle2,
   XCircle,
   Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Navbar from "@/components/Navbar";
+import { useAuth } from "@/hooks/use-auth";
 
 interface AlertData {
   id: string;
@@ -41,6 +43,7 @@ interface AlertData {
 }
 
 export default function Alerts() {
+  const { loading: authLoading, company, userRole, handleLogout } = useAuth();
   const [alerts, setAlerts] = useState<AlertData[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -440,14 +443,31 @@ export default function Alerts() {
     );
   }
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <AlertTriangle className="w-12 h-12 animate-pulse text-purple-600 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-400">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto p-6">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Alertas de Risco</h1>
-        <p className="text-muted-foreground">
-          {alertsCount.active} alertas ativos de {alertsCount.total} totais
-        </p>
-      </header>
+    <div className="min-h-screen bg-background">
+      <Navbar
+        companyName={company?.name || "Parity"}
+        userRole={userRole || "admin"}
+        onLogout={handleLogout}
+      />
+      <div className="container mx-auto p-6">
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold mb-2">Alertas de Risco</h2>
+          <p className="text-muted-foreground">
+            {alertsCount.active} alertas ativos de {alertsCount.total} totais
+          </p>
+        </div>
       
       <Tabs defaultValue="all" className="w-full">
         <TabsList className="grid w-full grid-cols-6" role="tablist" aria-label="Categorias de alertas">
@@ -564,6 +584,7 @@ export default function Alerts() {
           )}
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

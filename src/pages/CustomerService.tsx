@@ -3,16 +3,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Headphones, Activity, BarChart3 } from "lucide-react";
 import ERPIntegrationSetup from "@/components/integrations/ERPIntegrationSetup";
 import VOIPDashboard from "@/components/integrations/VOIPDashboard";
+import Navbar from "@/components/Navbar";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function CustomerService() {
+  const { loading, company, userRole, handleLogout } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <Headphones className="w-12 h-12 animate-pulse text-purple-600 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-400">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto p-6">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Atendimento ao Cliente</h1>
-        <p className="text-muted-foreground">
-          Integrações e dashboards para suporte e atendimento
-        </p>
-      </header>
+    <div className="min-h-screen bg-background">
+      <Navbar
+        companyName={company?.name || "Parity"}
+        userRole={userRole || "admin"}
+        onLogout={handleLogout}
+      />
+      <div className="container mx-auto p-6">
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold mb-2">Atendimento ao Cliente</h2>
+          <p className="text-muted-foreground">
+            Integrações e dashboards para suporte e atendimento
+          </p>
+        </div>
 
       <Tabs defaultValue="erp" className="w-full">
         <TabsList className="grid w-full grid-cols-3" role="tablist">
@@ -54,6 +75,7 @@ export default function CustomerService() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
