@@ -16,11 +16,31 @@ interface GoalsManagementProps {
   selectedDepartmentId: string | null;
 }
 
+interface Goal {
+  id: string;
+  name: string;
+  description: string;
+  metric_type: string;
+  target_value: number;
+  period: string;
+  department_id: string;
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+  departments?: { name: string };
+}
+
+interface Department {
+  id: string;
+  name: string;
+  is_active: boolean;
+}
+
 export default function GoalsManagement({ userRole, selectedDepartmentId }: GoalsManagementProps) {
-  const [goals, setGoals] = useState<any[]>([]);
-  const [departments, setDepartments] = useState<any[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingGoal, setEditingGoal] = useState<any>(null);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",

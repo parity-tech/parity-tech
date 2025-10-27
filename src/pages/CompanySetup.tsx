@@ -89,9 +89,9 @@ export default function CompanySetup() {
       console.log("Empresa criada:", data);
       toast.success("Empresa criada com sucesso!");
       setStep(2);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro completo:", error);
-      toast.error(error.message || "Erro ao criar empresa");
+      toast.error(error instanceof Error ? error.message : "Erro ao criar empresa");
     } finally {
       setLoading(false);
     }
@@ -147,8 +147,8 @@ export default function CompanySetup() {
 
       toast.success(`${teamMembers.length} convite(s) enviado(s) com sucesso!`);
       navigate("/homepage");
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao enviar convites");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao enviar convites");
     } finally {
       setLoading(false);
     }

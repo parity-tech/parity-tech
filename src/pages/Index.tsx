@@ -100,11 +100,11 @@ const Index = () => {
       
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-12 sm:py-16 md:py-20 lg:py-24 relative z-10">
-        <div 
+        <div
           id="hero"
           data-animate
           className={`text-center max-w-5xl mx-auto mb-16 sm:mb-20 md:mb-24 transition-all duration-1000 ${
-            visibleSections.has("hero") || true ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+            visibleSections.has("hero") ? "opacity-100 translate-y-0" : "opacity-100 translate-y-0"
           }`}
         >
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 mb-6 sm:mb-8 shadow-lg animate-fade-in border border-white/20">

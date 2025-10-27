@@ -22,7 +22,8 @@ import {
   Shield,
   Edit,
   Save,
-  Phone,
+  LogOut,
+  User as UserIcon
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -31,6 +32,19 @@ const ROLES = [
   { value: "gestor", label: "Gerente", color: "bg-blue-500 text-white" },
   { value: "usuario", label: "RH", color: "bg-green-500 text-white" },
 ];
+
+interface Profile {
+  id: string;
+  full_name: string | null;
+  company_id: string | null;
+}
+
+interface Company {
+  id: string;
+  name: string;
+  cnpj: string | null;
+  document?: string | null;
+}
 
 type TeamMember = {
   id: string;
@@ -43,8 +57,8 @@ type TeamMember = {
 export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [company, setCompany] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [company, setCompany] = useState<Company | null>(null);
   const [userRole, setUserRole] = useState<string>("");
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [newMember, setNewMember] = useState({ name: "", email: "", role: "" });
@@ -60,16 +74,21 @@ export default function SettingsPage() {
   }, []);
 
   const initAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
 
-    setUser(user);
-    await loadUserData(user.id);
-    await loadTeamMembers();
-    setLoading(false);
+      setUser(user);
+      await loadUserData(user.id);
+      await loadTeamMembers();
+      setLoading(false);
+    } catch (error) {
+      console.error("Erro no initAuth:", error);
+      setLoading(false);
+    }
   };
 
   const loadUserData = async (userId: string) => {
@@ -81,10 +100,14 @@ export default function SettingsPage() {
         .single();
 
       if (profileData) {
-        setProfile(profileData);
+        setProfile({
+          id: profileData.id,
+          full_name: profileData.full_name,
+          company_id: profileData.company_id,
+        });
         setProfileForm({
           full_name: profileData.full_name || "",
-          phone: profileData.phone || user?.user_metadata?.phone || "",
+          phone: "",
         });
 
         // Buscar empresa separadamente
@@ -150,13 +173,16 @@ export default function SettingsPage() {
 
       // Formatar dados dos membros
       // Por enquanto, vamos usar o user atual como exemplo de email
-      const formattedMembers = (members || []).map((member: any) => ({
-        id: member.id,
-        full_name: member.full_name || "Sem nome",
-        email: member.id === user.id ? user.email : "email@exemplo.com", // Temporário
-        role: member.user_roles?.[0]?.role || "usuario",
-        created_at: member.created_at,
-      }));
+      const formattedMembers = (members || []).map((member) => {
+        const userRoles = Array.isArray(member.user_roles) ? member.user_roles : [];
+        return {
+          id: member.id,
+          full_name: member.full_name || "Sem nome",
+          email: member.id === user.id ? (user.email || "email@exemplo.com") : "email@exemplo.com", // Temporário
+          role: userRoles[0]?.role || "usuario",
+          created_at: member.created_at,
+        };
+      });
 
       console.log("Membros formatados:", formattedMembers);
       setTeamMembers(formattedMembers);
@@ -179,18 +205,11 @@ export default function SettingsPage() {
 
       if (profileError) throw profileError;
 
-      // Atualizar metadados do usuário
-      const { error: authError } = await supabase.auth.updateUser({
-        data: { phone: profileForm.phone },
-      });
-
-      if (authError) throw authError;
-
       toast.success("Perfil atualizado com sucesso!");
       setEditingProfile(false);
       await loadUserData(user.id);
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao atualizar perfil");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao atualizar perfil");
     } finally {
       setLoading(false);
     }
@@ -226,8 +245,8 @@ export default function SettingsPage() {
 
       toast.success("Membro removido com sucesso");
       await loadTeamMembers();
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao remover membro");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao remover membro");
     }
   };
 
@@ -241,54 +260,59 @@ export default function SettingsPage() {
     return roleInfo?.color || "bg-muted";
   };
 
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 2) return numbers;
-    if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    if (numbers.length <= 10)
-      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Logout realizado com sucesso!");
+    navigate("/auth");
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <Settings className="w-12 h-12 animate-pulse text-purple-600 mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-400">Carregando...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
-      <header className="border-b bg-card sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/homepage")}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
             <button
               onClick={() => navigate("/homepage")}
-              className="flex items-center gap-4 hover:opacity-80 transition-opacity"
+              className="flex items-center space-x-4 hover:opacity-80 transition-opacity"
             >
-              <img src="/parity-inverse.svg" alt="Parity" className="w-12 h-12" />
+              <img src="/parity-logo.svg" alt="Parity" className="w-16 h-16" />
               <div>
-                <h1 className="text-xl font-bold">{company?.name || "Parity"}</h1>
+                <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+                  {company?.name || "Parity"}
+                </h1>
               </div>
             </button>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="inline-flex items-center rounded-full bg-purple-600 px-3 py-1 text-xs font-medium text-white">
-              {userRole || "admin"}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleLogout}
-              title="Sair"
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center space-x-4">
+              <span className="text-xs font-medium text-white bg-purple-600 rounded-full px-3 py-1">
+                {userRole || "admin"}
+              </span>
+              <button
+                onClick={() => navigate("/settings")}
+                className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+                title="Configurações"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+                title="Sair"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -313,20 +337,15 @@ export default function SettingsPage() {
 
           {/* Aba de Membros */}
           <TabsContent value="members" className="mt-6 space-y-6">
-            {/* Debug Info */}
-            <div className="text-xs text-muted-foreground mb-2">
-              Debug: Role = {userRole || "não definido"} | Company = {company?.id || "não definido"}
-            </div>
-
             {/* Adicionar Membro - Card Destacado */}
             {(userRole === "admin" || !company?.id) && (
-              <Card className="border-primary/30 bg-gradient-subtle">
+              <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <UserPlus className="w-5 h-5 text-primary" />
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-50">
+                    <UserPlus className="w-5 h-5 text-purple-600" />
                     Convidar Novo Membro
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-slate-600 dark:text-slate-400">
                     Adicione novos membros à sua equipe e defina suas permissões
                   </CardDescription>
                 </CardHeader>
@@ -386,12 +405,12 @@ export default function SettingsPage() {
             )}
 
             {/* Lista de Membros */}
-            <Card>
+            <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Membros da Equipe ({teamMembers.length})</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-slate-900 dark:text-slate-50">Membros da Equipe ({teamMembers.length})</CardTitle>
+                    <CardDescription className="text-slate-600 dark:text-slate-400">
                       Gerencie os membros e suas permissões
                     </CardDescription>
                   </div>
@@ -425,7 +444,7 @@ export default function SettingsPage() {
                         className="grid grid-cols-12 gap-4 items-center p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
                       >
                         <div className="col-span-4 flex items-center gap-2">
-                          <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                          <UserIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                           <div className="min-w-0">
                             <p className="font-medium text-sm truncate">{member.full_name || "Sem nome"}</p>
                             <p className="text-xs text-muted-foreground truncate">{member.email}</p>
@@ -433,7 +452,7 @@ export default function SettingsPage() {
                         </div>
                         <div className="col-span-3">
                           <p className="text-sm text-muted-foreground">
-                            {member.id === user?.id ? profile?.position || "Não definido" : "Colaborador"}
+                            {member.id === user?.id ? "Você" : "Colaborador"}
                           </p>
                         </div>
                         <div className="col-span-3">
@@ -462,12 +481,12 @@ export default function SettingsPage() {
 
           {/* Aba de Conta */}
           <TabsContent value="account" className="mt-6">
-            <Card>
+            <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Informações da Conta</CardTitle>
-                    <CardDescription>Gerencie suas informações pessoais</CardDescription>
+                    <CardTitle className="text-slate-900 dark:text-slate-50">Informações da Conta</CardTitle>
+                    <CardDescription className="text-slate-600 dark:text-slate-400">Gerencie suas informações pessoais</CardDescription>
                   </div>
                   {!editingProfile ? (
                     <Button variant="outline" onClick={() => setEditingProfile(true)}>
@@ -510,24 +529,6 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Telefone</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="phone"
-                        placeholder="(11) 91234-5678"
-                        value={profileForm.phone}
-                        onChange={(e) => {
-                          const formatted = formatPhone(e.target.value);
-                          setProfileForm({ ...profileForm, phone: formatted });
-                        }}
-                        disabled={!editingProfile}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
                     <Label>Papel na Empresa</Label>
                     <Badge className={getRoleColor(userRole)} >
                       {getRoleLabel(userRole)}
@@ -540,10 +541,10 @@ export default function SettingsPage() {
 
           {/* Aba de Empresa */}
           <TabsContent value="company" className="mt-6">
-            <Card>
+            <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
               <CardHeader>
-                <CardTitle>Informações da Empresa</CardTitle>
-                <CardDescription>Dados cadastrais da empresa</CardDescription>
+                <CardTitle className="text-slate-900 dark:text-slate-50">Informações da Empresa</CardTitle>
+                <CardDescription className="text-slate-600 dark:text-slate-400">Dados cadastrais da empresa</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -553,7 +554,7 @@ export default function SettingsPage() {
 
                 <div className="space-y-2">
                   <Label>CNPJ</Label>
-                  <Input value={company?.document || "Não informado"} disabled />
+                  <Input value={company?.cnpj || "Não informado"} disabled />
                 </div>
 
                 {userRole === "admin" && (
