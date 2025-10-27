@@ -18,7 +18,7 @@ export default function Navbar({ companyName = "Parity", userRole = "admin", onL
             onClick={() => navigate("/homepage")}
             className="flex items-center space-x-4 hover:opacity-80 transition-opacity"
           >
-            <img src="/parity-inverse.svg" alt="Parity" className="w-12 h-12" />
+            <img src="/parity-logo.svg" alt="Parity" className="w-16 h-16" />
             <div>
               <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-50">
                 {companyName}
